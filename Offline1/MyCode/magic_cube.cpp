@@ -31,6 +31,9 @@ double sphereRadius = sqrt(3) * pX_z;
 
 double camMoveSmooth = 0.25;
 double noRefChange = 0.25;
+double dir_x, dir_y, dir_z, dirNorm, left_x, left_y, left_z, updir_x, updir_y, updir_z, updirNorm;
+double t1_x,t1_y,t1_z, t2_x, t2_y, t2_z, t2_dot;
+
 
 /* Initialize OpenGL Graphics */
 void initGL() {
@@ -46,11 +49,15 @@ void initGL() {
 // bool isAxes = true;
 
 
-double eyeat_x = 4, eyeat_y = 4, eyeat_z = 4;
+double eyeat_x = 2.5, eyeat_y = 2.5, eyeat_z = 2.5;
 double lookdir_x=-1/sqrt(3), lookdir_y =-1/sqrt(3), lookdir_z= -1/sqrt(3);
 double lookright_x = 0.707, lookright_y = 0, lookright_z = -0.707;
 double lookup_x = -1/sqrt(6), lookup_y = 2/sqrt(6), lookup_z = -1/sqrt(6);
 double camRotateRate = 0.01;
+
+
+double lookat_x =0, lookat_y = 0, lookat_z = 0;
+double up_y = 1, up_x =0, up_z = 0;
 
 
 /* Draw axes: X in Red, Y in Green and Z in Blue */
@@ -344,9 +351,14 @@ void display() {
     // default arguments of gluLookAt
     // gluLookAt(0,0,0, 0,0,-100, 0,1,0);
 
+    // gluLookAt(eyeat_x,eyeat_y,eyeat_z,
+    //           eyeat_x + lookdir_x,eyeat_y + lookdir_y,eyeat_z + lookdir_z,
+    //           lookup_x,lookup_y,lookup_z);
+
+
     gluLookAt(eyeat_x,eyeat_y,eyeat_z,
-              eyeat_x + lookdir_x,eyeat_y + lookdir_y,eyeat_z + lookdir_z,
-              lookup_x,lookup_y,lookup_z);
+              lookat_x,lookat_y,lookat_z,
+              up_x,up_y,up_z);
     // draw
     // if (isAxes) drawAxes();
 
@@ -386,61 +398,215 @@ void keyboardListener(unsigned char key, int x, int y) {
     // Control eye (location of the eye)
     // look left/right, so change only lookright and lookdir vectors
     case '1':
-        lookright_x = lookright_x * cos(camRotateRate) + lookdir_x * sin(camRotateRate);
-        lookright_y = lookright_y * cos(camRotateRate) + lookdir_y * sin(camRotateRate);
-        lookright_z = lookright_z * cos(camRotateRate) + lookdir_z * sin(camRotateRate);
 
-        lookdir_x = - lookright_x * sin(camRotateRate) + lookdir_x * cos(camRotateRate);
-        lookdir_y = - lookright_y * sin(camRotateRate) + lookdir_y * cos(camRotateRate);
-        lookdir_z = - lookright_z * sin(camRotateRate) + lookdir_z * cos(camRotateRate);        
+
+        lookat_x -= eyeat_x;
+        lookat_y -= eyeat_y;
+        lookat_z -= eyeat_z;
+
+
+        t1_x = up_y*lookat_z - up_z*lookat_y;
+        t1_y = up_z*lookat_x - up_x*lookat_z;
+        t1_z = up_x*lookat_y - up_y*lookat_x;
+        t1_x*=sin(camRotateRate);
+        t1_y*=sin(camRotateRate);
+        t1_z*=sin(camRotateRate);
+
+        t2_dot = up_x * lookat_x + up_y * lookat_y + up_z * lookat_z;
+        t2_x = up_x * t2_dot * (1-cos(camRotateRate));
+        t2_y = up_y * t2_dot * (1-cos(camRotateRate));
+        t2_z = up_z * t2_dot * (1-cos(camRotateRate)); 
+
+
+        lookat_x = lookat_x*(cos(camRotateRate)) + t1_x + t2_x;
+        lookat_y = lookat_y*(cos(camRotateRate)) + t1_y + t2_y;
+        lookat_z = lookat_z*(cos(camRotateRate)) + t1_z + t2_z;
+
+
+        lookat_x += eyeat_x;
+        lookat_y += eyeat_y;
+        lookat_z += eyeat_z;
+
+
         break;
     case '2':
-        lookright_x = lookright_x * cos(-camRotateRate) + lookdir_x * sin(-camRotateRate);
-        lookright_y = lookright_y * cos(-camRotateRate) + lookdir_y * sin(-camRotateRate);
-        lookright_z = lookright_z * cos(-camRotateRate) + lookdir_z * sin(-camRotateRate);
 
-        lookdir_x = - lookright_x * sin(-camRotateRate) + lookdir_x * cos(-camRotateRate);
-        lookdir_y = - lookright_y * sin(-camRotateRate) + lookdir_y * cos(-camRotateRate);
-        lookdir_z = - lookright_z * sin(-camRotateRate) + lookdir_z * cos(-camRotateRate);
+
+        lookat_x -= eyeat_x;
+        lookat_y -= eyeat_y;
+        lookat_z -= eyeat_z;
+
+
+        t1_x = up_y*lookat_z - up_z*lookat_y;
+        t1_y = up_z*lookat_x - up_x*lookat_z;
+        t1_z = up_x*lookat_y - up_y*lookat_x;
+        t1_x*=sin(-camRotateRate);
+        t1_y*=sin(-camRotateRate);
+        t1_z*=sin(-camRotateRate);
+
+        t2_dot = up_x * lookat_x + up_y * lookat_y + up_z * lookat_z;
+        t2_x = up_x * t2_dot * (1-cos(-camRotateRate));
+        t2_y = up_y * t2_dot * (1-cos(-camRotateRate));
+        t2_z = up_z * t2_dot * (1-cos(-camRotateRate)); 
+
+
+        lookat_x = lookat_x*(cos(-camRotateRate)) + t1_x + t2_x;
+        lookat_y = lookat_y*(cos(-camRotateRate)) + t1_y + t2_y;
+        lookat_z = lookat_z*(cos(-camRotateRate)) + t1_z + t2_z;
+
+
+        lookat_x += eyeat_x;
+        lookat_y += eyeat_y;
+        lookat_z += eyeat_z;
 
         break;
     // Look up/down, so change only lookdir and lookup vectors
     case '3':
-        lookdir_x = lookdir_x * cos(camRotateRate) + lookup_x * sin(camRotateRate);
-        lookdir_y = lookdir_y * cos(camRotateRate) + lookup_y * sin(camRotateRate);
-        lookdir_z = lookdir_z * cos(camRotateRate) + lookup_z * sin(camRotateRate);
 
-        lookup_x = - lookdir_x * sin(camRotateRate) + lookup_x * cos(camRotateRate);
-        lookup_y = - lookdir_y * sin(camRotateRate) + lookup_y * cos(camRotateRate);
-        lookup_z = - lookdir_z * sin(camRotateRate) + lookup_z * cos(camRotateRate);
+
+
+        dir_x = lookat_x - eyeat_x;
+        dir_y = lookat_y - eyeat_y;
+        dir_z = lookat_z - eyeat_z;
+        dirNorm = 1/sqrt(dir_x*dir_x + dir_y * dir_y + dir_z * dir_z);
+        dir_x*=dirNorm, dir_y*=dirNorm, dir_z*=dirNorm;
+
+        left_x = up_y * dir_z - up_z*dir_y;
+        left_y = up_z * dir_x - up_x*dir_z;
+        left_z = up_x * dir_y - up_y*dir_x;
+
+
+        lookat_x -= eyeat_x;
+        lookat_y -= eyeat_y;
+        lookat_z -= eyeat_z;
+
+
+        t1_x = left_y*lookat_z - left_z*lookat_y;
+        t1_y = left_z*lookat_x - left_x*lookat_z;
+        t1_z = left_x*lookat_y - left_y*lookat_x;
+        t1_x*=sin(-camRotateRate);
+        t1_y*=sin(-camRotateRate);
+        t1_z*=sin(-camRotateRate);
+
+        t2_dot = left_x * lookat_x + left_y * lookat_y + left_z * lookat_z;
+        t2_x = left_x * t2_dot * (1-cos(-camRotateRate));
+        t2_y = left_y * t2_dot * (1-cos(-camRotateRate));
+        t2_z = left_z * t2_dot * (1-cos(-camRotateRate)); 
+
+
+        lookat_x = lookat_x*(cos(-camRotateRate)) + t1_x + t2_x;
+        lookat_y = lookat_y*(cos(-camRotateRate)) + t1_y + t2_y;
+        lookat_z = lookat_z*(cos(-camRotateRate)) + t1_z + t2_z;
+
+
+        lookat_x += eyeat_x;
+        lookat_y += eyeat_y;
+        lookat_z += eyeat_z;
         break;
     case '4':
-        lookdir_x = lookdir_x * cos(-camRotateRate) + lookup_x * sin(-camRotateRate);
-        lookdir_y = lookdir_y * cos(-camRotateRate) + lookup_y * sin(-camRotateRate);
-        lookdir_z = lookdir_z * cos(-camRotateRate) + lookup_z * sin(-camRotateRate);
 
-        lookup_x = - lookdir_x * sin(-camRotateRate) + lookup_x * cos(-camRotateRate);
-        lookup_y = - lookdir_y * sin(-camRotateRate) + lookup_y * cos(-camRotateRate);
-        lookup_z = - lookdir_z * sin(-camRotateRate) + lookup_z * cos(-camRotateRate);
+
+        dir_x = lookat_x - eyeat_x;
+        dir_y = lookat_y - eyeat_y;
+        dir_z = lookat_z - eyeat_z;
+        dirNorm = 1/sqrt(dir_x*dir_x + dir_y * dir_y + dir_z * dir_z);
+        dir_x*=dirNorm, dir_y*=dirNorm, dir_z*=dirNorm;
+
+        left_x = up_y * dir_z - up_z*dir_y;
+        left_y = up_z * dir_x - up_x*dir_z;
+        left_z = up_x * dir_y - up_y*dir_x;
+
+
+        lookat_x -= eyeat_x;
+        lookat_y -= eyeat_y;
+        lookat_z -= eyeat_z;
+
+
+        t1_x = left_y*lookat_z - left_z*lookat_y;
+        t1_y = left_z*lookat_x - left_x*lookat_z;
+        t1_z = left_x*lookat_y - left_y*lookat_x;
+        t1_x*=sin(camRotateRate);
+        t1_y*=sin(camRotateRate);
+        t1_z*=sin(camRotateRate);
+
+        t2_dot = left_x * lookat_x + left_y * lookat_y + left_z * lookat_z;
+        t2_x = left_x * t2_dot * (1-cos(camRotateRate));
+        t2_y = left_y * t2_dot * (1-cos(camRotateRate));
+        t2_z = left_z * t2_dot * (1-cos(camRotateRate)); 
+
+
+        lookat_x = lookat_x*(cos(camRotateRate)) + t1_x + t2_x;
+        lookat_y = lookat_y*(cos(camRotateRate)) + t1_y + t2_y;
+        lookat_z = lookat_z*(cos(camRotateRate)) + t1_z + t2_z;
+
+
+        lookat_x += eyeat_x;
+        lookat_y += eyeat_y;
+        lookat_z += eyeat_z;
+
+
         break;
     // tilt anticlock/clock, so change only lookup and lookright vectors
     case '5':
-        lookup_x = lookup_x * cos(camRotateRate) + lookright_x * sin(camRotateRate);
-        lookup_y = lookup_y * cos(camRotateRate) + lookright_y * sin(camRotateRate);
-        lookup_z = lookup_z * cos(camRotateRate) + lookright_z * sin(camRotateRate);
 
-        lookright_x = - lookup_x * sin(camRotateRate) + lookright_x * cos(camRotateRate);
-        lookright_y = - lookup_y * sin(camRotateRate) + lookright_y * cos(camRotateRate);
-        lookright_z = - lookup_z * sin(camRotateRate) + lookright_z * cos(camRotateRate);
+
+
+        dir_x = lookat_x - eyeat_x;
+        dir_y = lookat_y - eyeat_y;
+        dir_z = lookat_z - eyeat_z;
+        dirNorm = 1/sqrt(dir_x*dir_x + dir_y * dir_y + dir_z * dir_z);
+        dir_x*=dirNorm, dir_y*=dirNorm, dir_z*=dirNorm;
+
+
+
+        t1_x = dir_y*up_z - dir_z*up_y;
+        t1_y = dir_z*up_x - dir_x*up_z;
+        t1_z = dir_x*up_y - dir_y*up_x;
+        t1_x*=sin(camRotateRate);
+        t1_y*=sin(camRotateRate);
+        t1_z*=sin(camRotateRate);
+
+        t2_dot = dir_x * up_x + dir_y * up_y + dir_z * up_z;
+        t2_x = dir_x * t2_dot * (1-cos(camRotateRate));
+        t2_y = dir_y * t2_dot * (1-cos(camRotateRate));
+        t2_z = dir_z * t2_dot * (1-cos(camRotateRate)); 
+
+
+        up_x = up_x*(cos(camRotateRate)) + t1_x + t2_x;
+        up_y = up_y*(cos(camRotateRate)) + t1_y + t2_y;
+        up_z = up_z*(cos(camRotateRate)) + t1_z + t2_z;
+
+
         break;
     case '6':
-        lookup_x = lookup_x * cos(-camRotateRate) + lookright_x * sin(-camRotateRate);
-        lookup_y = lookup_y * cos(-camRotateRate) + lookright_y * sin(-camRotateRate);
-        lookup_z = lookup_z * cos(-camRotateRate) + lookright_z * sin(-camRotateRate);
 
-        lookright_x = - lookup_x * sin(-camRotateRate) + lookright_x * cos(-camRotateRate);
-        lookright_y = - lookup_y * sin(-camRotateRate) + lookright_y * cos(-camRotateRate);
-        lookright_z = - lookup_z * sin(-camRotateRate) + lookright_z * cos(-camRotateRate);
+
+        dir_x = lookat_x - eyeat_x;
+        dir_y = lookat_y - eyeat_y;
+        dir_z = lookat_z - eyeat_z;
+        dirNorm = 1/sqrt(dir_x*dir_x + dir_y * dir_y + dir_z * dir_z);
+        dir_x*=dirNorm, dir_y*=dirNorm, dir_z*=dirNorm;
+
+
+
+        t1_x = dir_y*up_z - dir_z*up_y;
+        t1_y = dir_z*up_x - dir_x*up_z;
+        t1_z = dir_x*up_y - dir_y*up_x;
+        t1_x*=sin(-camRotateRate);
+        t1_y*=sin(-camRotateRate);
+        t1_z*=sin(-camRotateRate);
+
+        t2_dot = dir_x * up_x + dir_y * up_y + dir_z * up_z;
+        t2_x = dir_x * t2_dot * (1-cos(-camRotateRate));
+        t2_y = dir_y * t2_dot * (1-cos(-camRotateRate));
+        t2_z = dir_z * t2_dot * (1-cos(-camRotateRate)); 
+
+
+        up_x = up_x*(cos(-camRotateRate)) + t1_x + t2_x;
+        up_y = up_y*(cos(-camRotateRate)) + t1_y + t2_y;
+        up_z = up_z*(cos(-camRotateRate)) + t1_z + t2_z;
+
+
         break;
     
 
@@ -459,31 +625,12 @@ void keyboardListener(unsigned char key, int x, int y) {
         S2O();
         break;
     case 's':
-        eyeat_x-=lookup_x * camMoveSmooth * noRefChange;
-        eyeat_y-=lookup_y * camMoveSmooth * noRefChange;
-        eyeat_z-=lookup_z * camMoveSmooth * noRefChange;
-        
-        lookdir_x = lookdir_x * cos(camRotateRate) + lookup_x * sin(camRotateRate);
-        lookdir_y = lookdir_y * cos(camRotateRate) + lookup_y * sin(camRotateRate);
-        lookdir_z = lookdir_z * cos(camRotateRate) + lookup_z * sin(camRotateRate);
 
-        lookup_x = - lookdir_x * sin(camRotateRate) + lookup_x * cos(camRotateRate);
-        lookup_y = - lookdir_y * sin(camRotateRate) + lookup_y * cos(camRotateRate);
-        lookup_z = - lookdir_z * sin(camRotateRate) + lookup_z * cos(camRotateRate);
-
+        eyeat_y-=camMoveSmooth;
         break;
     case 'w':
-        eyeat_x+=lookup_x * camMoveSmooth * noRefChange;
-        eyeat_y+=lookup_y * camMoveSmooth * noRefChange;
-        eyeat_z+=lookup_z * camMoveSmooth * noRefChange;
 
-        lookdir_x = lookdir_x * cos(-camRotateRate) + lookup_x * sin(-camRotateRate);
-        lookdir_y = lookdir_y * cos(-camRotateRate) + lookup_y * sin(-camRotateRate);
-        lookdir_z = lookdir_z * cos(-camRotateRate) + lookup_z * sin(-camRotateRate);
-
-        lookup_x = - lookdir_x * sin(-camRotateRate) + lookup_x * cos(-camRotateRate);
-        lookup_y = - lookdir_y * sin(-camRotateRate) + lookup_y * cos(-camRotateRate);
-        lookup_z = - lookdir_z * sin(-camRotateRate) + lookup_z * cos(-camRotateRate);
+        eyeat_y+=camMoveSmooth;
 
         break;
 
@@ -502,39 +649,122 @@ void specialKeyListener(int key, int x,int y) {
     
     case GLUT_KEY_LEFT:
 
-        eyeat_x -= lookright_x *camMoveSmooth;
-        eyeat_y -= lookright_y *camMoveSmooth;
-        eyeat_z -= lookright_z *camMoveSmooth;
+
+        
+        dir_x = lookat_x - eyeat_x;
+        dir_y = lookat_y - eyeat_y;
+        dir_z = lookat_z - eyeat_z;
+        dirNorm = 1/sqrt(dir_x*dir_x + dir_y * dir_y + dir_z * dir_z);
+        dir_x*=dirNorm, dir_y*=dirNorm, dir_z*=dirNorm;
+
+        left_x = up_y * dir_z - up_z*dir_y;
+        left_y = up_z * dir_x - up_x*dir_z;
+        left_z = up_x * dir_y - up_y*dir_x;
+
+        eyeat_x+=left_x * camMoveSmooth;
+        eyeat_y+=left_y * camMoveSmooth;
+        eyeat_z+=left_z * camMoveSmooth;
+
+        lookat_x+=left_x * camMoveSmooth;
+        lookat_y+=left_y * camMoveSmooth;
+        lookat_z+=left_z * camMoveSmooth;
+
         break;
+
     case GLUT_KEY_RIGHT:
 
-        eyeat_x += lookright_x *camMoveSmooth;
-        eyeat_y += lookright_y *camMoveSmooth;
-        eyeat_z += lookright_z *camMoveSmooth;
+
+
+        dir_x = lookat_x - eyeat_x;
+        dir_y = lookat_y - eyeat_y;
+        dir_z = lookat_z - eyeat_z;
+        dirNorm = 1/sqrt(dir_x*dir_x + dir_y * dir_y + dir_z * dir_z);
+        dir_x*=dirNorm, dir_y*=dirNorm, dir_z*=dirNorm;
+
+        left_x = up_y * dir_z - up_z*dir_y;
+        left_y = up_z * dir_x - up_x*dir_z;
+        left_z = up_x * dir_y - up_y*dir_x;
+
+        eyeat_x-=left_x * camMoveSmooth;
+        eyeat_y-=left_y * camMoveSmooth;
+        eyeat_z-=left_z * camMoveSmooth;
+
+        lookat_x-=left_x * camMoveSmooth;
+        lookat_y-=left_y * camMoveSmooth;
+        lookat_z-=left_z * camMoveSmooth;
         break;
     case GLUT_KEY_UP:
 
-        eyeat_x += lookdir_x *camMoveSmooth;
-        eyeat_y += lookdir_y *camMoveSmooth;
-        eyeat_z += lookdir_z *camMoveSmooth;
+        dir_x = lookat_x - eyeat_x;
+        dir_y = lookat_y - eyeat_y;
+        dir_z = lookat_z - eyeat_z;
+        dirNorm = 1/sqrt(dir_x*dir_x + dir_y * dir_y + dir_z * dir_z);
+        dir_x*=dirNorm, dir_y*=dirNorm, dir_z*=dirNorm;
+
+        eyeat_x+=dir_x * camMoveSmooth;
+        eyeat_y+=dir_y * camMoveSmooth;
+        eyeat_z+=dir_z * camMoveSmooth;
+
+        lookat_x+=dir_x * camMoveSmooth;
+        lookat_y+=dir_y * camMoveSmooth;
+        lookat_z+=dir_z * camMoveSmooth;
+
+
         break;
     case GLUT_KEY_DOWN:
 
-        eyeat_x -= lookdir_x *camMoveSmooth;
-        eyeat_y -= lookdir_y *camMoveSmooth;
-        eyeat_z -= lookdir_z *camMoveSmooth;
+
+        dir_x = lookat_x - eyeat_x;
+        dir_y = lookat_y - eyeat_y;
+        dir_z = lookat_z - eyeat_z;
+        dirNorm = 1/sqrt(dir_x*dir_x + dir_y * dir_y + dir_z * dir_z);
+        dir_x*=dirNorm, dir_y*=dirNorm, dir_z*=dirNorm;
+
+        eyeat_x-=dir_x * camMoveSmooth;
+        eyeat_y-=dir_y * camMoveSmooth;
+        eyeat_z-=dir_z * camMoveSmooth;
+
+        lookat_x-=dir_x * camMoveSmooth;
+        lookat_y-=dir_y * camMoveSmooth;
+        lookat_z-=dir_z * camMoveSmooth;
+
         break;
     case GLUT_KEY_PAGE_DOWN:
 
-        eyeat_x-=lookup_x * camMoveSmooth;
-        eyeat_y-=lookup_y * camMoveSmooth;
-        eyeat_z-=lookup_z * camMoveSmooth;
+        updir_x = up_x ;
+        updir_y = up_y ;
+        updir_z = up_z ;
+        updirNorm = 1/sqrt(updir_x * updir_x + updir_y * updir_y + updir_z * updir_z);
+        updir_x*=updirNorm, updir_y*=updirNorm, updir_z*=updirNorm;
+
+        eyeat_x-=updir_x * camMoveSmooth;
+        eyeat_y-=updir_y * camMoveSmooth;
+        eyeat_z-=updir_z * camMoveSmooth;
+
+        lookat_x-=updir_x * camMoveSmooth;
+        lookat_y-=updir_y * camMoveSmooth;
+        lookat_z-=updir_z * camMoveSmooth;
+
+
+
 
         break;
     case GLUT_KEY_PAGE_UP:
-        eyeat_x+=lookup_x * camMoveSmooth;
-        eyeat_y+=lookup_y * camMoveSmooth;
-        eyeat_z+=lookup_z * camMoveSmooth;
+
+
+        updir_x = up_x ;
+        updir_y = up_y ;
+        updir_z = up_z ;
+        updirNorm = 1/sqrt(updir_x * updir_x + updir_y * updir_y + updir_z * updir_z);
+        updir_x*=updirNorm, updir_y*=updirNorm, updir_z*=updirNorm;
+
+        eyeat_x+=updir_x * camMoveSmooth;
+        eyeat_y+=updir_y * camMoveSmooth;
+        eyeat_z+=updir_z * camMoveSmooth;
+
+        lookat_x+=updir_x * camMoveSmooth;
+        lookat_y+=updir_y * camMoveSmooth;
+        lookat_z+=updir_z * camMoveSmooth;
 
         break;
 
