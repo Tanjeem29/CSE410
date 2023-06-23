@@ -7,7 +7,12 @@
 using namespace std;
 #define pi (2*acos(0.0))
 #define g (9.81)
+#include <chrono>
+using namespace std::chrono;
 
+uint64_t timeInMillis(){
+	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
 
 double hourAngle;
 double minuteAngle;
@@ -218,7 +223,10 @@ void updateHands(int value) {
 
 
 void updateBob2(int value) {
-	theta3 = thetamax*cos(sqrt(g/pendLength)*t);
+	// theta3 = thetamax*cos(sqrt(g/pendLength)*t);
+	double period = 2000;
+	theta3 = thetamax*cos(2 * M_PI / period * (timeInMillis()%2000));
+	// theta3 = thetamax*cos(2 * M_PI / period * timeInMillis());
 	glutTimerFunc(bobRefresh, updateBob2, 0); // Call next 'updateBob' secondRefreshMillis later
 }
 

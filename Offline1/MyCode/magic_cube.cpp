@@ -30,6 +30,7 @@ double sphereRadius = sqrt(3) * pX_z;
 
 
 double camMoveSmooth = 0.25;
+double noRefChange = 0.25;
 
 /* Initialize OpenGL Graphics */
 void initGL() {
@@ -458,16 +459,32 @@ void keyboardListener(unsigned char key, int x, int y) {
         S2O();
         break;
     case 's':
+        eyeat_x-=lookup_x * camMoveSmooth * noRefChange;
+        eyeat_y-=lookup_y * camMoveSmooth * noRefChange;
+        eyeat_z-=lookup_z * camMoveSmooth * noRefChange;
+        
+        lookdir_x = lookdir_x * cos(camRotateRate) + lookup_x * sin(camRotateRate);
+        lookdir_y = lookdir_y * cos(camRotateRate) + lookup_y * sin(camRotateRate);
+        lookdir_z = lookdir_z * cos(camRotateRate) + lookup_z * sin(camRotateRate);
 
-        eyeat_x-=lookup_x * camMoveSmooth;
-        eyeat_y-=lookup_y * camMoveSmooth;
-        eyeat_z-=lookup_z * camMoveSmooth;
+        lookup_x = - lookdir_x * sin(camRotateRate) + lookup_x * cos(camRotateRate);
+        lookup_y = - lookdir_y * sin(camRotateRate) + lookup_y * cos(camRotateRate);
+        lookup_z = - lookdir_z * sin(camRotateRate) + lookup_z * cos(camRotateRate);
 
         break;
     case 'w':
-        eyeat_x+=lookup_x * camMoveSmooth;
-        eyeat_y+=lookup_y * camMoveSmooth;
-        eyeat_z+=lookup_z * camMoveSmooth;
+        eyeat_x+=lookup_x * camMoveSmooth * noRefChange;
+        eyeat_y+=lookup_y * camMoveSmooth * noRefChange;
+        eyeat_z+=lookup_z * camMoveSmooth * noRefChange;
+
+        lookdir_x = lookdir_x * cos(-camRotateRate) + lookup_x * sin(-camRotateRate);
+        lookdir_y = lookdir_y * cos(-camRotateRate) + lookup_y * sin(-camRotateRate);
+        lookdir_z = lookdir_z * cos(-camRotateRate) + lookup_z * sin(-camRotateRate);
+
+        lookup_x = - lookdir_x * sin(-camRotateRate) + lookup_x * cos(-camRotateRate);
+        lookup_y = - lookdir_y * sin(-camRotateRate) + lookup_y * cos(-camRotateRate);
+        lookup_z = - lookdir_z * sin(-camRotateRate) + lookup_z * cos(-camRotateRate);
+
         break;
 
     // Control exit
