@@ -24,10 +24,7 @@ double inc_1 = (1.0/3 - 1)/num_moves;
 double inc_2 = (1.0/3 - 0)/num_moves;
 double cylinderLength = sqrt((pX_x-pY_x)*(pX_x-pY_x) + (pX_y-pY_y)*(pX_y-pY_y) + (pX_z-pY_z)*(pX_z-pY_z));
 double cylinderRadius = pX_z / sin(phi/2);
-// double sphereCenter = 1.0;
-// double sphereRadius = 1/sqrt(3);
-// double sphereCenter_inc = (1.0-0)/num_moves;
-// double sphereRadius_inc = (0-1/sqrt(3))/num_moves;
+
 double sphereCenter = pX_x - pX_z;
 double sphereRadius = sqrt(3) * pX_z;
 
@@ -42,10 +39,10 @@ void initGL() {
 }
 
 // Global variables
-GLfloat eyex = 4, eyey = 4, eyez = 4;
-GLfloat centerx = 0, centery = 0, centerz = 0;
-GLfloat upx = 0, upy = 1, upz = 0;
-bool isAxes = true, isCube = false, isPyramid = false;
+// GLfloat eyex = 4, eyey = 4, eyez = 4;
+// GLfloat centerx = 0, centery = 0, centerz = 0;
+// GLfloat upx = 0, upy = 1, upz = 0;
+// bool isAxes = true;
 
 
 double eyeat_x = 4, eyeat_y = 4, eyeat_z = 4;
@@ -56,110 +53,25 @@ double camRotateRate = 0.01;
 
 
 /* Draw axes: X in Red, Y in Green and Z in Blue */
-void drawAxes() {
-    glLineWidth(3);
-    glBegin(GL_LINES);
-        glColor3f(1,0,0);   // Red
-        // X axis
-        glVertex3f(0,0,0);
-        glVertex3f(1,0,0);
+// void drawAxes() {
+//     glLineWidth(3);
+//     glBegin(GL_LINES);
+//         glColor3f(1,0,0);   // Red
+//         // X axis
+//         glVertex3f(0,0,0);
+//         glVertex3f(1,0,0);
 
-        glColor3f(0,1,0);   // Green
-        // Y axis
-        glVertex3f(0,0,0);
-        glVertex3f(0,1,0);
+//         glColor3f(0,1,0);   // Green
+//         // Y axis
+//         glVertex3f(0,0,0);
+//         glVertex3f(0,1,0);
 
-        glColor3f(0,0,1);   // Blue
-        // Z axis
-        glVertex3f(0,0,0);
-        glVertex3f(0,0,1);
-    glEnd();
-}
-
-/* Draw a cube centered at the origin */
-void drawCube() {
-    glBegin(GL_QUADS);                // Begin drawing the color cube with 6 quads
-        // Top face (y = 1.0f)
-        // Define vertices in counter-clockwise (CCW) order with normal pointing out
-        glColor3f(0.0f, 1.0f, 0.0f);     // Green
-        glVertex3f( 1.0f, 1.0f, -1.0f);
-        glVertex3f(-1.0f, 1.0f, -1.0f);
-        glVertex3f(-1.0f, 1.0f,  1.0f);
-        glVertex3f( 1.0f, 1.0f,  1.0f);
-
-        // Bottom face (y = -1.0f)
-        glColor3f(1.0f, 0.5f, 0.0f);     // Orange
-        glVertex3f( 1.0f, -1.0f,  1.0f);
-        glVertex3f(-1.0f, -1.0f,  1.0f);
-        glVertex3f(-1.0f, -1.0f, -1.0f);
-        glVertex3f( 1.0f, -1.0f, -1.0f);
-
-        // Front face  (z = 1.0f)
-        glColor3f(1.0f, 0.0f, 0.0f);     // Red
-        glVertex3f( 1.0f,  1.0f, 1.0f);
-        glVertex3f(-1.0f,  1.0f, 1.0f);
-        glVertex3f(-1.0f, -1.0f, 1.0f);
-        glVertex3f( 1.0f, -1.0f, 1.0f);
-
-        // Back face (z = -1.0f)
-        glColor3f(1.0f, 1.0f, 0.0f);     // Yellow
-        glVertex3f( 1.0f, -1.0f, -1.0f);
-        glVertex3f(-1.0f, -1.0f, -1.0f);
-        glVertex3f(-1.0f,  1.0f, -1.0f);
-        glVertex3f( 1.0f,  1.0f, -1.0f);
-
-        // Left face (x = -1.0f)
-        glColor3f(0.0f, 0.0f, 1.0f);     // Blue
-        glVertex3f(-1.0f,  1.0f,  1.0f);
-        glVertex3f(-1.0f,  1.0f, -1.0f);
-        glVertex3f(-1.0f, -1.0f, -1.0f);
-        glVertex3f(-1.0f, -1.0f,  1.0f);
-
-        // Right face (x = 1.0f)
-        glColor3f(1.0f, 0.0f, 1.0f);     // Magenta
-        glVertex3f(1.0f,  1.0f, -1.0f);
-        glVertex3f(1.0f,  1.0f,  1.0f);
-        glVertex3f(1.0f, -1.0f,  1.0f);
-        glVertex3f(1.0f, -1.0f, -1.0f);
-    glEnd();  // End of drawing color-cube
-}
-
-/* Draw a pyramid centered at the origin */
-void drawPyramid() {
-    glBegin(GL_TRIANGLES);           // Begin drawing the pyramid with 4 triangles
-        // Front
-        glColor3f(1.0f, 0.0f, 0.0f);     // Red
-        glVertex3f( 0.0f, 1.0f, 0.0f);
-        glColor3f(0.0f, 1.0f, 0.0f);     // Green
-        glVertex3f(-1.0f, -1.0f, 1.0f);
-        glColor3f(0.0f, 0.0f, 1.0f);     // Blue
-        glVertex3f(1.0f, -1.0f, 1.0f);
-
-        // Right
-        glColor3f(1.0f, 0.0f, 0.0f);     // Red
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        glColor3f(0.0f, 0.0f, 1.0f);     // Blue
-        glVertex3f(1.0f, -1.0f, 1.0f);
-        glColor3f(0.0f, 1.0f, 0.0f);     // Green
-        glVertex3f(1.0f, -1.0f, -1.0f);
-
-        // Back
-        glColor3f(1.0f, 0.0f, 0.0f);     // Red
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        glColor3f(0.0f, 1.0f, 0.0f);     // Green
-        glVertex3f(1.0f, -1.0f, -1.0f);
-        glColor3f(0.0f, 0.0f, 1.0f);     // Blue
-        glVertex3f(-1.0f, -1.0f, -1.0f);
-
-        // Left
-        glColor3f(1.0f,0.0f,0.0f);       // Red
-        glVertex3f( 0.0f, 1.0f, 0.0f);
-        glColor3f(0.0f,0.0f,1.0f);       // Blue
-        glVertex3f(-1.0f,-1.0f,-1.0f);
-        glColor3f(0.0f,1.0f,0.0f);       // Green
-        glVertex3f(-1.0f,-1.0f, 1.0f);
-    glEnd();   // Done drawing the pyramid
-}
+//         glColor3f(0,0,1);   // Blue
+//         // Z axis
+//         glVertex3f(0,0,0);
+//         glVertex3f(0,0,1);
+//     glEnd();
+// }
 
 
 void drawOctahedronFace(){
@@ -206,8 +118,7 @@ void O2S(){
     if(pX_x + inc_1 - 1.0 /3 <= 0){
         // printf("%lf\n", pX_x);
         pX_x = pX_y = pX_z = pY_x = pY_y = pY_z = pZ_x = pZ_y = pZ_z = 1.0/3;
-        // printf("Ohnoh\n");
-        // printf("-----%lf\n", pX_x);
+
     }
     else{
         // printf("%lf\n", pX_x);
@@ -291,26 +202,7 @@ void drawCylinderEdge(){
     double tr_x = 0;
     double tr_y = 0;
     double tr_z = temp_z - cylinderRadius * cos(phi/2);
-    // printf("%lf, %lf, %lf\n", YZmp_x,YZmp_y,YZmp_z);
-    // printf("%lf, %lf, %lf\n", temp_x,temp_y,temp_z);
-    // glBegin(GL_LINE_LOOP);
-    //     glColor3f(1,0,0);   // Red
-    //     // X axis
-    //     glVertex3f(YZmp_x,YZmp_y,YZmp_z);
-    //     glColor3f(0,1,0);   // Green
-    //     glVertex3f(temp_x,temp_y,temp_z);
-    //     glVertex3f(tr_x,tr_y,tr_z);
 
-    //     // glColor3f(0,1,0);   // Green
-    //     // // Y axis
-    //     // glVertex3f(0,0,0);
-    //     // glVertex3f(0,1,0);
-
-    //     // glColor3f(0,0,1);   // Blue
-    //     // // Z axis
-    //     // glVertex3f(0,0,0);
-    //     // glVertex3f(0,0,1);
-    // glEnd();
 
     
     glPushMatrix();
@@ -323,13 +215,7 @@ void drawCylinderEdge(){
         drawCylinder(cylinderLength, cylinderRadius, 90);
         // glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
     glPopMatrix();
-    //     glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
-    //     drawOctahedronFace();
-    //     glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
-    //     drawOctahedronFace();
-    //     glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
-    //     drawOctahedronFace();
-    // glPopMatrix();
+
 }
 
 void drawAllEdges(){
@@ -370,7 +256,7 @@ void calcVertices(){
     double v[3];
     double a1;
     double a2;
-    // printf("%d, %d\n", numRows);
+
     for(int i =0; i<numRows; i++){
         a2 = (M_PI /180.0)*(45.0 - 90.0 * i/(numRows-1));
         n2[0] = -sin(a2);
@@ -394,11 +280,7 @@ void calcVertices(){
             sphereVertices[0][i][j] = v[0];
             sphereVertices[1][i][j] = v[1];
             sphereVertices[2][i][j] = v[2];
-            // printf("%d %d %lf %lf %lf\n",i,j,  v[0],v[1],v[2]);
-
-            // printf("%d %d %lf %lf %lf\n",i,j, sphereRadius* sphereVertices[0][i][j],sphereRadius* sphereVertices[1][i][j],sphereRadius* sphereVertices[2][i][j]);
-                        // printf("%d %d %lf %lf %lf\n",i,j,  sphereVertices[0][i][j], sphereVertices[1][i][j], sphereVertices[2][i][j]);
-
+            
         }
     }
 }
@@ -409,25 +291,17 @@ void drawSpherePart(){
     glBegin(GL_QUADS);           // Begin drawing the pyramid with 4 triangles
     for(int i=0;i<numRows-1;i++){
         for(int j=0;j<numRows-1;j++){
-                // glVertex3f(0,0,1);
-                // glVertex3f(0,1,1);
-                // glVertex3f(0,-1,1);
-                // glVertex3f(1,0,1);
-                // Front
-                // printf("%lf, %lf, %lf\n", sphereRadius* sphereVertices[0][i][j],sphereRadius* sphereVertices[1][i][j],sphereRadius* sphereVertices[2][i][j]);
+                
                 glVertex3f( sphereRadius* sphereVertices[0][i][j],sphereRadius* sphereVertices[1][i][j],sphereRadius* sphereVertices[2][i][j]);
                 glVertex3f( sphereRadius*sphereVertices[0][i+1][j], sphereRadius*sphereVertices[1][i+1][j], sphereRadius*sphereVertices[2][i+1][j]);
                 glVertex3f( sphereRadius*sphereVertices[0][i+1][j+1], sphereRadius*sphereVertices[1][i+1][j+1], sphereRadius*sphereVertices[2][i+1][j+1]);
                 glVertex3f( sphereRadius*sphereVertices[0][i][j+1], sphereRadius*sphereVertices[1][i][j+1], sphereRadius*sphereVertices[2][i][j+1]);
 
-                // glVertex3f( sphereVertices[0][i][j],sphereVertices[1][i][j],sphereVertices[2][i][j]);
-                // glVertex3f( sphereVertices[0][i+1][j], sphereVertices[1][i+1][j], sphereVertices[2][i+1][j]);
-                // glVertex3f( sphereVertices[0][i+1][j+1], sphereVertices[1][i+1][j+1], sphereVertices[2][i+1][j+1]);
-                // glVertex3f( sphereVertices[0][i][j+1], sphereVertices[1][i][j+1], sphereVertices[2][i][j+1]);
+
 
         }
     }
-    glEnd();   // Done drawing the pyramid
+    glEnd();   
     glPopMatrix();
 }
 
@@ -469,21 +343,12 @@ void display() {
     // default arguments of gluLookAt
     // gluLookAt(0,0,0, 0,0,-100, 0,1,0);
 
-    // control viewing (or camera)
-    // gluLookAt(eyex,eyey,eyez,
-    //           centerx,centery,centerz,
-    //           upx,upy,upz);
     gluLookAt(eyeat_x,eyeat_y,eyeat_z,
               eyeat_x + lookdir_x,eyeat_y + lookdir_y,eyeat_z + lookdir_z,
               lookup_x,lookup_y,lookup_z);
     // draw
-    if (isAxes) drawAxes();
-    if (isCube) drawCube();
-    if (isPyramid) drawPyramid();
+    // if (isAxes) drawAxes();
 
-    
-    // drawCylinder(cylinderLength,cylinderRadius,90);
-    // drawCylinderEdge();
 
 
     glRotatef(objAngle, 0,1,0);
@@ -509,14 +374,7 @@ void reshapeListener(GLsizei width, GLsizei height) {  // GLsizei for non-negati
     // Set the aspect ratio of the clipping area to match the viewport
     glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix
     glLoadIdentity();             // Reset the projection matrix
-    /*if (width >= height) {
-        // aspect >= 1, set the height from -1 to 1, with larger width
-        gluOrtho2D(-1.0 * aspect, 1.0 * aspect, -1.0, 1.0);
-    } else {
-        // aspect < 1, set the width to -1 to 1, with larger height
-        gluOrtho2D(-1.0, 1.0, -1.0 / aspect, 1.0 / aspect);
-    }*/
-    // Enable perspective projection with fovy, aspect, zNear and zFar
+
     gluPerspective(45.0f, aspect, 0.1f, 100.0f);
 }
 
@@ -585,36 +443,6 @@ void keyboardListener(unsigned char key, int x, int y) {
         break;
     
 
-    // Control center (location where the eye is looking at)
-    // control centerx
-    case 'q':
-        centerx += v;
-        break;
-    case 'w':
-        centerx -= v;
-        break;
-    // control centery
-    case 'e':
-        centery += v;
-        break;
-    case 'r':
-        centery -= v;
-        break;
-    // control centerz
-    case 't':
-        centerz += v;
-        break;
-    case 'y':
-        centerz -= v;
-        break;
-
-    // Control what is shown
-    // case 'a':
-    //     isAxes = !isAxes;   // show/hide Axes if 'a' is pressed
-    //     break;
-    // case 'c':
-    //     isCube = !isCube;   // show/hide Cube if 'c' is pressed
-    //     break;
     case 'a':
         objAngle-=10;   // show/hide Axes if 'a' is pressed
         objAngle%=360;
@@ -623,14 +451,23 @@ void keyboardListener(unsigned char key, int x, int y) {
         objAngle+=10;   // show/hide Cube if 'c' is pressed
         objAngle%=360;
         break;
-    case 'p':
-        isPyramid = !isPyramid; // show/hide Pyramid if 'p' is pressed
-        break;
     case ',':
         O2S();
         break;
     case '.':
         S2O();
+        break;
+    case 's':
+
+        eyeat_x-=lookup_x * camMoveSmooth;
+        eyeat_y-=lookup_y * camMoveSmooth;
+        eyeat_z-=lookup_z * camMoveSmooth;
+
+        break;
+    case 'w':
+        eyeat_x+=lookup_x * camMoveSmooth;
+        eyeat_y+=lookup_y * camMoveSmooth;
+        eyeat_z+=lookup_z * camMoveSmooth;
         break;
 
     // Control exit
@@ -643,73 +480,35 @@ void keyboardListener(unsigned char key, int x, int y) {
 
 /* Callback handler for special-key event */
 void specialKeyListener(int key, int x,int y) {
-    double v = 0.25;
-    double lx = centerx - eyex;
-    double lz = centerz - eyez;
-    double s;
+
     switch (key) {
-    // case GLUT_KEY_LEFT:
-    //     eyex += v * (upy*lz);
-    //     eyez += v * (-lx*upy);
-    //     s = sqrt(eyex*eyex + eyez*eyez) / (4 * sqrt(2));
-    //     eyex /= s;
-    //     eyez /= s;
-    //     break;
-    // case GLUT_KEY_RIGHT:
-    //     eyex += v * (-upy*lz);
-    //     eyez += v * (lx*upy);
-    //     s = sqrt(eyex*eyex + eyez*eyez) / (4 * sqrt(2));
-    //     eyex /= s;
-    //     eyez /= s;
-    //     break;
-    // case GLUT_KEY_UP:
-    //     eyey += v;
-    //     break;
-    // case GLUT_KEY_DOWN:
-    //     eyey -= v;
-    //     break;
+    
     case GLUT_KEY_LEFT:
-        // centerx+=v;
-        // eyex+=v;
-        // centerz-=v;
-        // eyez-=v;
+
         eyeat_x -= lookright_x *camMoveSmooth;
         eyeat_y -= lookright_y *camMoveSmooth;
         eyeat_z -= lookright_z *camMoveSmooth;
         break;
     case GLUT_KEY_RIGHT:
-        // centerx-=v;
-        // eyex-=v;
-        // centerz+=v;
-        // eyez+=v;
+
         eyeat_x += lookright_x *camMoveSmooth;
         eyeat_y += lookright_y *camMoveSmooth;
         eyeat_z += lookright_z *camMoveSmooth;
         break;
     case GLUT_KEY_UP:
-        // centerx-=v;
-        // eyex-=v;
-        // centerz-=v;
-        // eyez-=v;
-        // centery-=v;
-        // eyey-=v;
+
         eyeat_x += lookdir_x *camMoveSmooth;
         eyeat_y += lookdir_y *camMoveSmooth;
         eyeat_z += lookdir_z *camMoveSmooth;
         break;
     case GLUT_KEY_DOWN:
-        // centerx+=v;
-        // eyex+=v;
-        // centerz+=v;
-        // eyez+=v;
-        // centery+=v;
-        // eyey+=v;
+
         eyeat_x -= lookdir_x *camMoveSmooth;
         eyeat_y -= lookdir_y *camMoveSmooth;
         eyeat_z -= lookdir_z *camMoveSmooth;
         break;
     case GLUT_KEY_PAGE_DOWN:
-        // centery -= v;
+
         eyeat_x-=lookup_x * camMoveSmooth;
         eyeat_y-=lookup_y * camMoveSmooth;
         eyeat_z-=lookup_z * camMoveSmooth;
@@ -719,11 +518,9 @@ void specialKeyListener(int key, int x,int y) {
         eyeat_x+=lookup_x * camMoveSmooth;
         eyeat_y+=lookup_y * camMoveSmooth;
         eyeat_z+=lookup_z * camMoveSmooth;
-        // centery += v;
+
         break;
-    // case GLUT_KEY_COMMA:
-    //     eyey -= v;
-    //     break;
+
     
     default:
         return;
