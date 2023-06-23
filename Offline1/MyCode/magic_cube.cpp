@@ -251,35 +251,35 @@ void drawAllEdges(){
 }
 
 void calcVertices(){
-    double n1[3];
-    double n2[3];
-    double v[3];
-    double a1;
-    double a2;
+    double norm1[3];
+    double norm2[3];
+    double tempVertex[3];
+    double latAng;
+    double longAng;
 
     for(int i =0; i<numRows; i++){
-        a2 = (M_PI /180.0)*(45.0 - 90.0 * i/(numRows-1));
-        n2[0] = -sin(a2);
-        n2[1] = cos(a2);
-        n2[2] = 0;
+        longAng = (M_PI /180.0)*(45.0 - 90.0 * i/(numRows-1));
+        norm2[0] = -sin(longAng);
+        norm2[1] = cos(longAng);
+        norm2[2] = 0;
         for(int j = 0; j<numRows;j++){
-            a1 = (M_PI /180.0)*(-45.0 + 90.0 * j/(numRows-1));
-            n1[0] = -sin(a1);
-            n1[1] = 0;
-            n1[2] = -cos(a1);
+            latAng = (M_PI /180.0)*(-45.0 + 90.0 * j/(numRows-1));
+            norm1[0] = -sin(latAng);
+            norm1[1] = 0;
+            norm1[2] = -cos(latAng);
 
-            v[0] = n1[1] * n2[2] - n1[2] * n2[1];
-            v[1] = n1[2] * n2[0] - n1[0] * n2[2];
-            v[2] = n1[0] * n2[1] - n1[1] * n2[0];
+            tempVertex[0] = norm1[1] * norm2[2] - norm1[2] * norm2[1];
+            tempVertex[1] = norm1[2] * norm2[0] - norm1[0] * norm2[2];
+            tempVertex[2] = norm1[0] * norm2[1] - norm1[1] * norm2[0];
 
-            double scale = 1 / sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-            v[0] *= scale;
-            v[1] *= scale;
-            v[2] *= scale;
+            double scale = 1 / sqrt(tempVertex[0]*tempVertex[0] + tempVertex[1]*tempVertex[1] + tempVertex[2]*tempVertex[2]);
+            tempVertex[0] *= scale;
+            tempVertex[1] *= scale;
+            tempVertex[2] *= scale;
 
-            sphereVertices[0][i][j] = v[0];
-            sphereVertices[1][i][j] = v[1];
-            sphereVertices[2][i][j] = v[2];
+            sphereVertices[0][i][j] = tempVertex[0];
+            sphereVertices[1][i][j] = tempVertex[1];
+            sphereVertices[2][i][j] = tempVertex[2];
             
         }
     }
