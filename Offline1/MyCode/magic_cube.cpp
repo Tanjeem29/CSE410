@@ -625,12 +625,56 @@ void keyboardListener(unsigned char key, int x, int y) {
         S2O();
         break;
     case 's':
+        dir_x = lookat_x - eyeat_x;
+        dir_y = lookat_y - eyeat_y;
+        dir_z = lookat_z - eyeat_z;
+        dirNorm = 1/sqrt(dir_x*dir_x + dir_y * dir_y + dir_z * dir_z);
+        dir_x*=dirNorm, dir_y*=dirNorm, dir_z*=dirNorm;
+
+        left_x = up_y * dir_z - up_z*dir_y;
+        left_y = up_z * dir_x - up_x*dir_z;
+        left_z = up_x * dir_y - up_y*dir_x;
+
 
         eyeat_y-=camMoveSmooth;
+        
+
+        dir_x = lookat_x - eyeat_x;
+        dir_y = lookat_y - eyeat_y;
+        dir_z = lookat_z - eyeat_z;
+        dirNorm = 1/sqrt(dir_x*dir_x + dir_y * dir_y + dir_z * dir_z);
+        dir_x*=dirNorm, dir_y*=dirNorm, dir_z*=dirNorm;
+
+        up_x = dir_y * left_z - dir_z*left_y;
+        up_y = dir_z * left_x - dir_x*left_z;
+        up_z = dir_x * left_y - dir_y*left_x;
+        
         break;
     case 'w':
+        dir_x = lookat_x - eyeat_x;
+        dir_y = lookat_y - eyeat_y;
+        dir_z = lookat_z - eyeat_z;
+        dirNorm = 1/sqrt(dir_x*dir_x + dir_y * dir_y + dir_z * dir_z);
+        dir_x*=dirNorm, dir_y*=dirNorm, dir_z*=dirNorm;
+
+        left_x = up_y * dir_z - up_z*dir_y;
+        left_y = up_z * dir_x - up_x*dir_z;
+        left_z = up_x * dir_y - up_y*dir_x;
+
 
         eyeat_y+=camMoveSmooth;
+        
+
+        dir_x = lookat_x - eyeat_x;
+        dir_y = lookat_y - eyeat_y;
+        dir_z = lookat_z - eyeat_z;
+        dirNorm = 1/sqrt(dir_x*dir_x + dir_y * dir_y + dir_z * dir_z);
+        dir_x*=dirNorm, dir_y*=dirNorm, dir_z*=dirNorm;
+
+        up_x = dir_y * left_z - dir_z*left_y;
+        up_y = dir_z * left_x - dir_x*left_z;
+        up_z = dir_x * left_y - dir_y*left_x;
+        
 
         break;
 
