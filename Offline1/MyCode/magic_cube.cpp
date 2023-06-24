@@ -49,15 +49,15 @@ void initGL() {
 // bool isAxes = true;
 
 
-double eyeat_x = 2.5, eyeat_y = 2.5, eyeat_z = 2.5;
-double lookdir_x=-1/sqrt(3), lookdir_y =-1/sqrt(3), lookdir_z= -1/sqrt(3);
-double lookright_x = 0.707, lookright_y = 0, lookright_z = -0.707;
-double lookup_x = -1/sqrt(6), lookup_y = 2/sqrt(6), lookup_z = -1/sqrt(6);
+
+// double lookdir_x=-1/sqrt(3), lookdir_y =-1/sqrt(3), lookdir_z= -1/sqrt(3);
+// double lookright_x = 0.707, lookright_y = 0, lookright_z = -0.707;
+// double lookup_x = -1/sqrt(6), lookup_y = 2/sqrt(6), lookup_z = -1/sqrt(6);
 double camRotateRate = 0.01;
 
-
+double eyeat_x = 2.5, eyeat_y = 2.5, eyeat_z = 2.5;
 double lookat_x =0, lookat_y = 0, lookat_z = 0;
-double up_y = 1, up_x =0, up_z = 0;
+double up_x = -1/sqrt(6), up_y =2/sqrt(6), up_z = -1/sqrt(6);
 
 
 /* Draw axes: X in Red, Y in Green and Z in Blue */
