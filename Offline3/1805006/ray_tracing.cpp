@@ -15,6 +15,7 @@ using namespace std;
 #define PI 3.1415926535
 void capture();
 double windowWidth = 640, windowHeight = 640;
+
 class sphere
 {
 public:
@@ -230,17 +231,17 @@ public:
         points[0][1] = y;
         points[0][2] = z - temp;
 
-        points[1][0] = x + temp;
-        points[1][1] = y;
-        points[1][2] = z - temp;
+        points[3][0] = x + temp;
+        points[3][1] = y;
+        points[3][2] = z - temp;
 
         points[2][0] = x + temp;
         points[2][1] = y;
         points[2][2] = z + temp;
 
-        points[3][0] = x - temp;
-        points[3][1] = y;
-        points[3][2] = z + temp;
+        points[1][0] = x - temp;
+        points[1][1] = y;
+        points[1][2] = z + temp;
 
         points[4][0] = x;
         points[4][1] = y + height;
@@ -990,10 +991,6 @@ void keyboardListener(unsigned char key, int x, int y)
         lookat_y = lookat_y * (cos(-camRotateRate)) + t1_y + t2_y;
         lookat_z = lookat_z * (cos(-camRotateRate)) + t1_z + t2_z;
 
-
-        
-        
-
         lookat_x += eyeat_x;
         lookat_y += eyeat_y;
         lookat_z += eyeat_z;
@@ -1003,14 +1000,14 @@ void keyboardListener(unsigned char key, int x, int y)
         dir_z = lookat_z - eyeat_z;
         dirNorm = 1 / sqrt(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z);
         dir_x *= dirNorm, dir_y *= dirNorm, dir_z *= dirNorm;
-        
+
         up_x = dir_y * left_z - dir_z * left_y;
         up_y = dir_z * left_x - dir_x * left_z;
         up_z = dir_x * left_y - dir_y * left_x;
 
-        printf("dir lenght: %lf\n", sqrt(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z));
-        printf("left lenght: %lf\n", sqrt(left_x * left_x + left_y * left_y + left_z * left_z));
-        printf("up lenght: %lf\n", sqrt(up_x * up_x + up_y * up_y + up_z * up_z));
+        // printf("dir lenght: %lf\n", sqrt(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z));
+        // printf("left lenght: %lf\n", sqrt(left_x * left_x + left_y * left_y + left_z * left_z));
+        // printf("up lenght: %lf\n", sqrt(up_x * up_x + up_y * up_y + up_z * up_z));
         // double upNorm = 1 / sqrt(up_x * up_x + up_y * up_y + up_z * up_z);
         // up_x *= upNorm, up_y *= upNorm, up_z *= upNorm;
         break;
@@ -1045,7 +1042,7 @@ void keyboardListener(unsigned char key, int x, int y)
         lookat_x = lookat_x * (cos(camRotateRate)) + t1_x + t2_x;
         lookat_y = lookat_y * (cos(camRotateRate)) + t1_y + t2_y;
         lookat_z = lookat_z * (cos(camRotateRate)) + t1_z + t2_z;
-        
+
         up_x = dir_y * left_z - dir_z * left_y;
         up_y = dir_z * left_x - dir_x * left_z;
         up_z = dir_x * left_y - dir_y * left_x;
@@ -1059,14 +1056,14 @@ void keyboardListener(unsigned char key, int x, int y)
         dir_z = lookat_z - eyeat_z;
         dirNorm = 1 / sqrt(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z);
         dir_x *= dirNorm, dir_y *= dirNorm, dir_z *= dirNorm;
-        
+
         up_x = dir_y * left_z - dir_z * left_y;
         up_y = dir_z * left_x - dir_x * left_z;
         up_z = dir_x * left_y - dir_y * left_x;
 
-        printf("dir lenght: %lf\n", sqrt(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z));
-        printf("left lenght: %lf\n", sqrt(left_x * left_x + left_y * left_y + left_z * left_z));
-        printf("up lenght: %lf\n", sqrt(up_x * up_x + up_y * up_y + up_z * up_z));
+        // printf("dir lenght: %lf\n", sqrt(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z));
+        // printf("left lenght: %lf\n", sqrt(left_x * left_x + left_y * left_y + left_z * left_z));
+        // printf("up lenght: %lf\n", sqrt(up_x * up_x + up_y * up_y + up_z * up_z));
 
         break;
     // tilt anticlock/clock, so change only lookup and lookright vectors
@@ -1121,7 +1118,7 @@ void keyboardListener(unsigned char key, int x, int y)
 
         break;
 
-     case '0':
+    case '0':
 
         capture();
 
@@ -1391,6 +1388,26 @@ void specialKeyListener(int key, int x, int y)
     glutPostRedisplay(); // Post a paint request to activate display()
 }
 
+class normalLight{
+    public:
+        double pos[3];  
+        double falloff;
+    
+};
+
+class spotLight{
+    public:
+        double pos[3];
+        double dir[3];
+        double falloff;
+        double cutoff;
+};
+
+normalLight normalLights[100];
+spotLight spotLights[100];
+
+
+
 void takeinputs()
 {
     string filename1 = "./description.txt";
@@ -1537,26 +1554,128 @@ void takeinputs()
     }
 }
 
-double intersectSphere(double rayBegin[], double rayDir[], sphere s ){
+class intersection
+{
+public:
+    int type; // 1 for sphere, 2 for cube, 3 for pyramid
+    int id;   // array id
+    sphere s;
+    cube c;
+    pyramid p;
+    double t;
+    double point[3];
+    double normal[3];
+};
+
+class tempPoint
+{
+public:
+    double p[4];
+};
+
+tempPoint getTrianglePlane(double a[], double b[], double c[])
+{
+    double plane[4];
+
+    double ab[3], ac[3];
+    ab[0] = b[0] - a[0];
+    ab[1] = b[1] - a[1];
+    ab[2] = b[2] - a[2];
+
+    ac[0] = c[0] - a[0];
+    ac[1] = c[1] - a[1];
+    ac[2] = c[2] - a[2];
+
+    double cross[3];
+    cross[0] = ab[1] * ac[2] - ab[2] * ac[1];
+    cross[1] = ab[2] * ac[0] - ab[0] * ac[2];
+    cross[2] = ab[0] * ac[1] - ab[1] * ac[0];
+
+    double norm = sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
+
+    plane[0] = cross[0] / norm;
+    plane[1] = cross[1] / norm;
+    plane[2] = cross[2] / norm;
+
+    plane[3] = -(plane[0] * a[0] + plane[1] * a[1] + plane[2] * a[2]);
+    tempPoint t = tempPoint();
+    t.p[0] = plane[0];
+    t.p[1] = plane[1];
+    t.p[2] = plane[2];
+    return t;
+}
+
+intersection intersectSphere(double rayBegin[], double rayDir[], sphere s)
+{
+
+    intersection ans = intersection();
     double t = 0;
+    double ro[3];
+    ro[0] = rayBegin[0] - s.center_x;
+    ro[1] = rayBegin[1] - s.center_y;
+    ro[2] = rayBegin[2] - s.center_z;
 
+    double a = rayDir[0] * rayDir[0] + rayDir[1] * rayDir[1] + rayDir[2] * rayDir[2];
+    double b = 2 * (rayDir[0] * ro[0] + rayDir[1] * ro[1] + rayDir[2] * ro[2]);
+    double c = ro[0] * ro[0] + ro[1] * ro[1] + ro[2] * ro[2] - s.radius * s.radius;
+
+    double del = b * b - 4 * a * c;
+
+    if (del < 0)
+    {
+        t = -1;
+    }
+    else
+    {
+        double t1 = (-b + sqrt(del)) / (2 * a);
+        double t2 = (-b - sqrt(del)) / (2 * a);
+
+        if (t1 < 0 && t2 < 0)
+        {
+            t = -1;
+        }
+        else if (t1 < 0 && t2 >= 0)
+        {
+            t = t2;
+        }
+        else if (t1 >= 0 && t2 < 0)
+        {
+            t = t1;
+        }
+        else
+        {
+            t = min(t1, t2);
+        }
+    }
+
+    ans.t = t;
+    ans.type = 1;
+    // ans.id = s.id;
+    ans.s = s;
+    ans.point[0] = ro[0] + t * rayDir[0];
+    ans.point[1] = ro[1] + t * rayDir[1];
+    ans.point[2] = ro[2] + t * rayDir[2];
+
+    ans.normal[0] = ans.point[0] - s.center_x;
+    ans.normal[1] = ans.point[1] - s.center_y;
+    ans.normal[2] = ans.point[2] - s.center_z;
+
+    double norm = sqrt(ans.normal[0] * ans.normal[0] + ans.normal[1] * ans.normal[1] + ans.normal[2] * ans.normal[2]);
+    ans.normal[0] /= norm;
+    ans.normal[1] /= norm;
+    ans.normal[2] /= norm;
+
+    return ans;
+}
+
+double determinantThree(double mat[][3])
+{
+    double t = mat[0][0] * (mat[1][1] * mat[2][2] - mat[1][2] * mat[2][1]) - mat[0][1] * (mat[1][0] * mat[2][2] - mat[1][2] * mat[2][0]) + mat[0][2] * (mat[1][0] * mat[2][1] - mat[1][1] * mat[2][0]);
     return t;
 }
 
-double intersectCube(double rayBegin[], double rayDir[], cube c ){
-    double t = 0;
-
-    return t;
-}
-
-
-
-double determinantThree(double mat[][3]){
-    double t = mat[0][0]*(mat[1][1]*mat[2][2] - mat[1][2]*mat[2][1]) - mat[0][1]*(mat[1][0]*mat[2][2] - mat[1][2]*mat[2][0]) + mat[0][2]*(mat[1][0]*mat[2][1] - mat[1][1]*mat[2][0]);
-    return t;
-}
-
-double intersectTriangle(double rayBegin[], double rayDir[], double v1[], double v2[], double v3[]){
+intersection intersectTriangle(double rayBegin[], double rayDir[], double v1[], double v2[], double v3[])
+{
     // double t = 1;
     // MyMatrix A = MyMatrix(3, 3,0);
     // A.setElement(0, 0, v1[0] - v2[0]);
@@ -1572,7 +1691,7 @@ double intersectTriangle(double rayBegin[], double rayDir[], double v1[], double
     // A.setElement(2, 2, rayDir[2]);
 
     // double detA = A.getDeterminant();
-
+    intersection temp = intersection();
     double A[3][3];
     A[0][0] = v1[0] - v2[0];
     A[0][1] = v1[0] - v3[0];
@@ -1587,9 +1706,12 @@ double intersectTriangle(double rayBegin[], double rayDir[], double v1[], double
     A[2][2] = rayDir[2];
 
     double detA = determinantThree(A);
+    if(detA == 0){
+        temp.t = -1;
+        return temp;
+        printf("Exception\n");
+    }
     // double detA = A[0][0]*(A[1][1]*A[2][2] - A[1][2]*A[2][1]) - A[0][1]*(A[1][0]*A[2][2] - A[1][2]*A[2][0]) + A[0][2]*(A[1][0]*A[2][1] - A[1][1]*A[2][0]);
-
-    
 
     // MyMatrix betaMat = MyMatrix(3, 3,0);
     // betaMat.setElement(0, 0, v1[0] - rayBegin[0]);
@@ -1603,7 +1725,6 @@ double intersectTriangle(double rayBegin[], double rayDir[], double v1[], double
     // betaMat.setElement(2, 0, v1[2] - rayBegin[2]);
     // betaMat.setElement(2, 1, v1[2] - v3[2]);
     // betaMat.setElement(2, 2, rayDir[2]);
-
 
     // double beta = betaMat.getDeterminant() / detA;
 
@@ -1621,8 +1742,6 @@ double intersectTriangle(double rayBegin[], double rayDir[], double v1[], double
     betaMat[2][2] = rayDir[2];
 
     double beta = determinantThree(betaMat) / detA;
-
-    
 
     // MyMatrix gammaMat = MyMatrix(3, 3,0);
     // gammaMat.setElement(0, 0, v1[0] - v2[0]);
@@ -1654,7 +1773,6 @@ double intersectTriangle(double rayBegin[], double rayDir[], double v1[], double
 
     double gamma = determinantThree(gammaMat) / detA;
 
-
     // MyMatrix tMat = MyMatrix(3, 3,0);
     // tMat.setElement(0, 0, v1[0] - v2[0]);
     // tMat.setElement(0, 1, v1[0] - v3[0]);
@@ -1684,63 +1802,134 @@ double intersectTriangle(double rayBegin[], double rayDir[], double v1[], double
     tMat[2][2] = v1[2] - rayBegin[2];
 
     double t = determinantThree(tMat) / detA;
+
     
-    if(beta+gamma>1 || beta<0 || gamma<0 || t<0){
+    temp.t = t;
+    temp.point[0] = rayBegin[0] + t * rayDir[0];
+    temp.point[1] = rayBegin[1] + t * rayDir[1];
+    temp.point[2] = rayBegin[2] + t * rayDir[2];
+
+    // double plane[4] = getTrianglePlane(v1, v2, v3);
+    tempPoint plane = getTrianglePlane(v1, v2, v3);
+    temp.normal[0] = plane.p[0];
+    temp.normal[1] = plane.p[1];
+    temp.normal[2] = plane.p[2];
+
+    if (beta + gamma > 1 || beta < 0 || gamma < 0 || t < 0)
+    {
         t = -1;
     }
-    return t;
+    temp.t = t;
+
+    return temp;
 }
 
-double intersectQuadrilateral(double rayBegin[], double rayDir[], double v1[], double v2[], double v3[], double v4[]){
-    double t = farPlane;
-    double temp = intersectTriangle(rayBegin, rayDir, v1, v2, v3);
-    if(temp > nearPlane && temp < t){
-        t = temp;
+intersection intersectQuadrilateral(double rayBegin[], double rayDir[], double v1[], double v2[], double v3[], double v4[])
+{
+    // double t = farPlane;
+    intersection ans = intersection();
+    ans.t = farPlane;
+    intersection temp = intersectTriangle(rayBegin, rayDir, v1, v2, v3);
+    if (temp.t > nearPlane && temp.t < ans.t)
+    {
+        ans = temp;
     }
     temp = intersectTriangle(rayBegin, rayDir, v1, v3, v4);
-    if(temp > nearPlane && temp < t){
-        t = temp;
+    if (temp.t > nearPlane && temp.t < ans.t)
+    {
+        ans = temp;
     }
-    return t;
+    return ans;
 }
 
-double intersectPyramid(double rayBegin[], double rayDir[], pyramid p ){
-    double t = farPlane;
-    double temp = intersectTriangle(rayBegin, rayDir, p.points[0], p.points[1], p.points[4]);
-    
+intersection intersectCube(double rayBegin[], double rayDir[], cube c)
+{
+    // double t = 0;
+    intersection temp = intersection();
+    intersection ans = intersection();
+    ans.t = farPlane;
+    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[0], c.points[1], c.points[2], c.points[3]);
+    if (temp.t > 0 && temp.t < ans.t)
+    {
+        ans = temp;
+    }
+    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[4], c.points[5], c.points[6], c.points[7]);
+    if (temp.t > 0 && temp.t < ans.t)
+    {
+        ans = temp;
+    }
+    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[0], c.points[1], c.points[5], c.points[4]);
+    if (temp.t > 0 && temp.t < ans.t)
+    {
+        ans = temp;
+    }
+    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[1], c.points[2], c.points[6], c.points[5]);
+    if (temp.t > 0 && temp.t < ans.t)
+    {
+        ans = temp;
+    }
+    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[2], c.points[3], c.points[7], c.points[6]);
+    if (temp.t > 0 && temp.t < ans.t)
+    {
+        ans = temp;
+    }
+    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[3], c.points[0], c.points[4], c.points[7]);
+    if (temp.t > 0 && temp.t < ans.t)
+    {
+        ans = temp;
+    }
+    return ans;
+    // return t;
+}
+
+// intersection temp = intersection();
+
+intersection intersectPyramid(double rayBegin[], double rayDir[], pyramid p)
+{
+    intersection temp = intersection();
+    intersection ans = intersection();
+    ans.t = farPlane;
+    temp = intersectTriangle(rayBegin, rayDir, p.points[0], p.points[1], p.points[4]);
+
     // sides
-    if(temp > nearPlane && temp < t){
-        t = temp;
+    if (temp.t > nearPlane && temp.t < ans.t)
+    {
+        ans = temp;
     }
     temp = intersectTriangle(rayBegin, rayDir, p.points[1], p.points[2], p.points[4]);
-    if(temp > nearPlane && temp < t){
-        t = temp;
+    if (temp.t > nearPlane && temp.t < ans.t)
+    {
+        ans = temp;
     }
     temp = intersectTriangle(rayBegin, rayDir, p.points[2], p.points[3], p.points[4]);
-    if(temp > nearPlane && temp < t){
-        t = temp;
+    if (temp.t > nearPlane && temp.t < ans.t)
+    {
+        ans = temp;
     }
     temp = intersectTriangle(rayBegin, rayDir, p.points[3], p.points[0], p.points[4]);
-    if(temp > nearPlane && temp < t){
-        t = temp;
+    if (temp.t > nearPlane && temp.t < ans.t)
+    {
+        ans = temp;
     }
 
-    //base
+    // base
     temp = intersectTriangle(rayBegin, rayDir, p.points[0], p.points[1], p.points[2]);
-    if(temp > nearPlane && temp < t){
-        t = temp;
+    if (temp.t > nearPlane && temp.t < ans.t)
+    {
+        ans = temp;
     }
     temp = intersectTriangle(rayBegin, rayDir, p.points[0], p.points[2], p.points[3]);
-    if(temp > nearPlane && temp < t){
-        t = temp;
+    if (temp.t > nearPlane && temp.t < ans.t)
+    {
+        ans = temp;
     }
 
-    return t;
+    return ans;
 }
 
 double ***pointBuffer;
 
-void initPointBuffer(int screen_height = numPixels, int screen_width = numPixels, int zm = farPlane, int r =0, int g = 0, int b = 0)
+void initPointBuffer(int screen_height = numPixels, int screen_width = numPixels, int zm = farPlane, int r = 0, int g = 0, int b = 0)
 {
     pointBuffer = new double **[screen_height];
     for (int i = 0; i < screen_height; ++i)
@@ -1772,6 +1961,7 @@ void freePointBuffer(int screen_height = numPixels, int screen_width = numPixels
 
 void capture()
 {
+    printf("Starting Image Capture ............\n");
     initPointBuffer();
     dir_x = lookat_x - eyeat_x;
     dir_y = lookat_y - eyeat_y;
@@ -1791,7 +1981,7 @@ void capture()
     // double windowHeight = 4 * planeDistance * tan(fovY / 2.0 * PI / 180); //works but shifted down
     double windowWidth = 2 * planeDistance * tan(fovX / 2.0 * PI / 180);
     printf("windowHeight: %f windowWidth: %f\n", windowHeight, windowWidth);
-    
+
     printf("lenght of dir: %f\n", sqrt(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z));
     printf("lenght of right: %f\n", sqrt(right_x * right_x + right_y * right_y + right_z * right_z));
     printf("lenght of up: %f\n", sqrt(up_x * up_x + up_y * up_y + up_z * up_z));
@@ -1808,7 +1998,7 @@ void capture()
     topLeft_z = topLeft_z + right_z * (du / 2.0) - up_z * (dv / 2.0);
 
     // int closest;
-    double closest_t = farPlane, t;
+    double closest_t = farPlane;
 
     for (int i = 0; i < numPixels; i++)
     { // along width, so columns, so y
@@ -1825,8 +2015,12 @@ void capture()
             // double currRayNorm = 1 / sqrt(currRay_x * currRay_x + currRay_y * currRay_y + currRay_z * currRay_z);
 
             // currRay_x *= currRayNorm, currRay_y *= currRayNorm, currRay_z *= currRayNorm;
+            intersection closestIntersection = intersection();
+            intersection tempIntersection = intersection();
+            closestIntersection.t = farPlane;
 
-            closest_t = farPlane;
+            // closest_t = farPlane;
+
             double color_r = 0, color_g = 0, color_b = 0;
 
             double currPixel[3];
@@ -1852,55 +2046,78 @@ void capture()
             sphere closestSphere;
             cube closestCube;
             pyramid closestPyramid;
-            for(int i =0; i< numSpheres; i++){
+            for (int i = 0; i < numSpheres; i++)
+            {
                 // t = intersectSphere(eyeat, currRay, spheres[i]);
-                t = intersectSphere(currPixel, currRay, spheres[i]);
-                if(t>0 && t<closest_t){
-                    closest_t = t;
-                    // closest = i;
-                    objtype = 1;
-                    closestSphere = spheres[i];
+                // double t;
+
+                tempIntersection = intersectSphere(currPixel, currRay, spheres[i]);
+                if (tempIntersection.t > 0 && tempIntersection.t < closestIntersection.t)
+                {
+                    closestIntersection = tempIntersection;
+                    closestIntersection.type = 1;
+                    closestIntersection.id = i;
                 }
             }
-            for(int i=0;i<numCubes;i++){
+            for (int i = 0; i < numCubes; i++)
+            {
                 // t = intersectCube(eyeat, currRay, cubes[i]);
-                t = intersectCube(currPixel, currRay, cubes[i]);
-                if(t>0 && t<closest_t){
-                    closest_t = t;
-                    // closest = i;
-                    objtype = 2;
-                    closestCube = cubes[i];
+                tempIntersection = intersectCube(currPixel, currRay, cubes[i]);
+                if (tempIntersection.t > 0 && tempIntersection.t < closestIntersection.t)
+                {
+                    // closest_t = t;
+                    // // closest = i;
+                    // objtype = 2;
+                    // closestCube = cubes[i];
+                    closestIntersection = tempIntersection;
+                    closestIntersection.type = 2;
+                    closestIntersection.id = i;
                 }
             }
 
-            for(int i=0;i<numPyramids;i++){
+            for (int i = 0; i < numPyramids; i++)
+            {
                 // t = intersectPyramid(eyeat, currRay, pyramids[i]);
-                t = intersectPyramid(currPixel, currRay, pyramids[i]);
-                if(t>0 && t<closest_t){
-                    closest_t = t;
-                    // closest = i;
-                    objtype = 3;
-                    closestPyramid = pyramids[i];
+                tempIntersection = intersectPyramid(currPixel, currRay, pyramids[i]);
+                if (tempIntersection.t > 0 && tempIntersection.t < closestIntersection.t)
+                {
+                    // closest_t = t;
+                    // // closest = i;
+                    // objtype = 3;
+                    // closestPyramid = pyramids[i];
+                    // printf("closest t: %f\n", tempIntersection.t);
+                    closestIntersection = tempIntersection;
+                    closestIntersection.type = 3;
+                    closestIntersection.id = i;
                 }
             }
 
-            if(t<farPlane){
-                if(objtype == 3){
+            if (closestIntersection.t < farPlane)
+            {
+                if (closestIntersection.type == 3)
+                {
+                    closestPyramid = pyramids[closestIntersection.id];
                     color_r = closestPyramid.r;
                     color_g = closestPyramid.g;
                     color_b = closestPyramid.b;
+                    // printf("colors: %f %f %f\n", color_r, color_g, color_b);
                 }
-                else if(objtype == 2){
+                else if (closestIntersection.type == 2)
+                {
+                    closestCube = cubes[closestIntersection.id];
                     color_r = closestCube.r;
                     color_g = closestCube.g;
                     color_b = closestCube.b;
                 }
-                else if(objtype == 1){
+                else if (closestIntersection.type == 1)
+                {
+                    closestSphere = spheres[closestIntersection.id];
                     color_r = closestSphere.r;
                     color_g = closestSphere.g;
                     color_b = closestSphere.b;
                 }
-                else{
+                else
+                {
                     color_r = 0;
                     color_g = 0;
                     color_b = 0;
@@ -1910,11 +2127,6 @@ void capture()
                 pointBuffer[i][j][2] = color_b;
                 pointBuffer[i][j][3] = closest_t;
             }
-
-
-
-
-
         }
     }
 
@@ -1926,22 +2138,24 @@ void capture()
     {
         for (int j = 0; j < screen_width; j++)
         {
-            image.set_pixel(j, i, pointBuffer[i][j][0] *255, pointBuffer[i][j][1] *255, pointBuffer[i][j][2] *255);
+            image.set_pixel(j, i, pointBuffer[i][j][0] * 255, pointBuffer[i][j][1] * 255, pointBuffer[i][j][2] * 255);
         }
     }
     image.save_image("out.bmp");
     // cout << "test.bmp saved" << endl;
     freePointBuffer(screen_height, screen_width);
     image.clear();
+    printf("Image Capture Done!\n");
 }
 
-void testTriangleIntersection(){
+void testTriangleIntersection()
+{
     // double rayBegin[3] = {1, 0, 0};
     // double rayDir[3] = {-.2, 0, 1};
     // double vertex1[3] = {-2, 2, 6};
     // double vertex2[3] = {2, 2, 6};
     // double vertex3[3] = {0,-4,6};
-    
+
     // double rayBegin[3] = {0, 0, 0};
     // double rayDir[3] = {0, 0, 1};
     // double vertex1[3] = {-2, 2, 1};
@@ -1951,13 +2165,13 @@ void testTriangleIntersection(){
     double rayBegin[3] = {0, 0, 0};
     double rayDir[3] = {0.68, -1.14, 1.82};
     double vertex1[3] = {-10, -2.3, 0};
-    double vertex2[3] = {4.4,20.3,9.5};
-    double vertex3[3] = {9.8,-10,0};
+    double vertex2[3] = {4.4, 20.3, 9.5};
+    double vertex3[3] = {9.8, -10, 0};
 
-    double t = intersectTriangle(rayBegin, rayDir, vertex1, vertex2, vertex3);
+    intersection I_t = intersectTriangle(rayBegin, rayDir, vertex1, vertex2, vertex3);
+    double t = I_t.t;
     printf("t: %f\n", t);
-    printf("point of intersections: %f %f %f\n", rayBegin[0] + t*rayDir[0], rayBegin[1] + t*rayDir[1], rayBegin[2] + t*rayDir[2]);
-    
+    printf("point of intersections: %f %f %f\n", rayBegin[0] + t * rayDir[0], rayBegin[1] + t * rayDir[1], rayBegin[2] + t * rayDir[2]);
 }
 
 /* Main function: GLUT runs as a console application starting at main()  */
@@ -1969,10 +2183,11 @@ int main(int argc, char **argv)
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB); // Depth, Double buffer, RGB color
     glutCreateWindow("OpenGL 3D Drawing");                    // Create a window with the given title
     // testTriangleIntersection();
+    // cout<<"Hello"<<endl;
     calcVertices();
     takeinputs();
-    glutDisplayFunc(display);            // Register display callback handler for window re-paint
-    capture();
+    glutDisplayFunc(display); // Register display callback handler for window re-paint
+    // capture();
     glutReshapeFunc(reshapeListener);    // Register callback handler for window re-shape
     glutKeyboardFunc(keyboardListener);  // Register callback handler for normal-key event
     glutSpecialFunc(specialKeyListener); // Register callback handler for special-key event
