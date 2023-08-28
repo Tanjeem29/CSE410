@@ -1388,25 +1388,28 @@ void specialKeyListener(int key, int x, int y)
     glutPostRedisplay(); // Post a paint request to activate display()
 }
 
-class normalLight{
-    public:
-        double pos[3];  
-        double falloff;
-    
+class normalLight
+{
+public:
+    double pos[3];
+    double falloff;
 };
 
-class spotLight{
-    public:
-        double pos[3];
-        double dir[3];
-        double falloff;
-        double cutoff;
+class spotLight
+{
+public:
+    double pos[3];
+    double dir[3];
+    double falloff;
+    double cutoff;
 };
 
 normalLight normalLights[100];
 spotLight spotLights[100];
-
-
+int numNormalLight;
+int numSpotLight;
+int normalLightIdx = 0;
+int spotLightIdx = 0;
 
 void takeinputs()
 {
@@ -1552,6 +1555,20 @@ void takeinputs()
             pyramids[numPyramids++] = p;
         }
     }
+
+    file >> numNormalLight;
+    for (int i = 0; i < numNormalLight; i++)
+    {
+        double x, y, z, f;
+        file >> normalLights[i].pos[0] >> normalLights[i].pos[1] >> normalLights[i].pos[2] >> normalLights[i].falloff;
+    }
+    file >> numSpotLight;
+    for (int i = 0; i < numSpotLight; i++)
+    {
+        file >> spotLights[i].pos[0] >> spotLights[i].pos[1] >> spotLights[i].pos[2] >> spotLights[i].falloff;
+        file >> spotLights[i].dir[0] >> spotLights[i].dir[1] >> spotLights[i].dir[2];
+        file >> spotLights[i].cutoff;
+    }
 }
 
 class intersection
@@ -1565,6 +1582,7 @@ public:
     double t;
     double point[3];
     double normal[3];
+    double color[3];
 };
 
 class tempPoint
@@ -1706,7 +1724,8 @@ intersection intersectTriangle(double rayBegin[], double rayDir[], double v1[], 
     A[2][2] = rayDir[2];
 
     double detA = determinantThree(A);
-    if(detA == 0){
+    if (detA == 0)
+    {
         temp.t = -1;
         return temp;
         printf("Exception\n");
@@ -1803,7 +1822,6 @@ intersection intersectTriangle(double rayBegin[], double rayDir[], double v1[], 
 
     double t = determinantThree(tMat) / detA;
 
-    
     temp.t = t;
     temp.point[0] = rayBegin[0] + t * rayDir[0];
     temp.point[1] = rayBegin[1] + t * rayDir[1];
@@ -1926,6 +1944,41 @@ intersection intersectPyramid(double rayBegin[], double rayDir[], pyramid p)
 
     return ans;
 }
+
+intersection intersectFloor(double rayBegin[], double rayDir[]){
+    if(rayDir[1] == 0){
+        intersection ans = intersection();
+        ans.t = -1;
+        return ans;
+    }
+    double t = -rayBegin[1] / rayDir[1];
+    intersection ans = intersection();
+    ans.t = t;
+    ans.point[0] = rayBegin[0] + t * rayDir[0];
+    ans.point[1] = rayBegin[1] + t * rayDir[1];
+    ans.point[2] = rayBegin[2] + t * rayDir[2];
+
+    ans.normal[0] = 0;
+    ans.normal[1] = rayBegin[1] > 0 ? 1 : -1;
+    ans.normal[2] = 0;
+
+    double col = 0;
+    ans.color[0] = col;
+    ans.color[1] = col;
+    ans.color[2] = col;
+
+    int x= (int)floor(ans.point[0]/checkerCellWidth);
+    int z= (int)floor(ans.point[2]/checkerCellWidth);
+    
+    if((x+z)%2){
+        ans.color[0] = 1-ans.color[0];
+        ans.color[1] = 1-ans.color[1];
+        ans.color[2] = 1-ans.color[2];
+        // printf("sum: %d, color: %f %f %f\n",x+z, ans.color[0], ans.color[1], ans.color[2]);
+    }
+    return ans;
+}
+
 
 double ***pointBuffer;
 
@@ -2092,9 +2145,32 @@ void capture()
                 }
             }
 
+            // find intersection with floor at y=0
+            tempIntersection = intersectFloor(currPixel, currRay);
+            if (tempIntersection.t > 0 && tempIntersection.t < closestIntersection.t)
+                {
+                    // closest_t = t;
+                    // // closest = i;
+                    // objtype = 3;
+                    // closestPyramid = pyramids[i];
+                    // printf("closest t: %f\n", tempIntersection.t);
+                    closestIntersection = tempIntersection;
+                    closestIntersection.type = 4;
+                    // printf("color: %f %f %f\n", closestIntersection.color[0], closestIntersection.color[1], closestIntersection.color[2]);
+                    // closestIntersection.id = i;
+                }
+
             if (closestIntersection.t < farPlane)
             {
-                if (closestIntersection.type == 3)
+                if (closestIntersection.type == 4)
+                {
+                    // closestPyramid = pyramids[closestIntersection.id];
+                    color_r = closestIntersection.color[0];
+                    color_g = closestIntersection.color[1];
+                    color_b = closestIntersection.color[2];
+                    // printf("colors: %f %f %f\n", color_r, color_g, color_b);
+                }
+                else if (closestIntersection.type == 3)
                 {
                     closestPyramid = pyramids[closestIntersection.id];
                     color_r = closestPyramid.r;
@@ -2126,6 +2202,8 @@ void capture()
                 pointBuffer[i][j][1] = color_g;
                 pointBuffer[i][j][2] = color_b;
                 pointBuffer[i][j][3] = closest_t;
+                // if(closestIntersection.type == 4)
+                //     printf("Color: %f %f %f\n", color_r, color_g, color_b);
             }
         }
     }
