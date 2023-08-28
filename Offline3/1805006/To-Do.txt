@@ -2,3 +2,7 @@
 2. Light input
 3. 1 level trace (define func struct for recursive)
 4. recursive trace
+
+
+
+no need for closest sphere and whatnot, keep normal, and point of intersection, color and coeef of surface.
