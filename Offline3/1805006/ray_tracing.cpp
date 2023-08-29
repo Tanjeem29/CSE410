@@ -2228,7 +2228,7 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
         // printf("t1: %f\n", t1);
         // printf("temp.t: %f\n", temp.t);
         // //no obstructions
-        if ((temp.t - t1)*(temp.t - t1) < threshhold)
+        if ((temp.t - t1) * (temp.t - t1) < threshhold)
         {
             double LdotN = lightRayDir[0] * closestIntersection.normal[0] + lightRayDir[1] * closestIntersection.normal[1] + lightRayDir[2] * closestIntersection.normal[2];
             LdotN = LdotN < 0 ? 0 : LdotN;
@@ -2239,8 +2239,10 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
             // printf("Light ray Dirs: %f %f %f\n", lightRayDir[0], lightRayDir[1], lightRayDir[2]);
             // printf("LdotN's %f\n", LdotN);
             // printf("Distance: %f\n", distance);
+
             // lambert += LdotN*scalingFactor;
             lambert += LdotN;
+
             // printf("Parameters: falloff: %f,  LdotN: %f, distance: %f, scalingFactor: %f, lambert: %f\n", LdotN, distance, scalingFactor, lambert);
             // printf("lambert: %f\n", lambert);
         }
@@ -2249,57 +2251,91 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
         // }
     }
 
-    // for(int i=0;i<numSpotLight;i++){
-    //     // printf("NormalLight %d\n", i);
-    //     // printf("param: %f %f %f\n", normalLights[i].pos[0], normalLights[i].pos[1], normalLights[i].pos[2]);
-    //     normalLight nl = spotLights[i];
-    //     double lightRayDir[3];
+    for (int i = 0; i < numSpotLight; i++)
+    {
+        // printf("NormalLight %d\n", i);
+        // printf("param: %f %f %f\n", normalLights[i].pos[0], normalLights[i].pos[1], normalLights[i].pos[2]);
+        spotLight sl = spotLights[i];
+        double lightRayDir[3];
 
-    //     lightRayDir[0] = nl.pos[0] - closestIntersection.point[0];
-    //     lightRayDir[1] = nl.pos[1] - closestIntersection.point[1];
-    //     lightRayDir[2] = nl.pos[2] - closestIntersection.point[2];
-    //     // lightRayDir[0] = closestIntersection.point[0] - nl.pos[0];
-    //     // lightRayDir[1] = closestIntersection.point[1] - nl.pos[1];
-    //     // lightRayDir[2] = closestIntersection.point[2] - nl.pos[2];
+        lightRayDir[0] = sl.pos[0] - closestIntersection.point[0];
+        lightRayDir[1] = sl.pos[1] - closestIntersection.point[1];
+        lightRayDir[2] = sl.pos[2] - closestIntersection.point[2];
+        // lightRayDir[0] = closestIntersection.point[0] - sl.pos[0];
+        // lightRayDir[1] = closestIntersection.point[1] - sl.pos[1];
+        // lightRayDir[2] = closestIntersection.point[2] - sl.pos[2];
 
-    //     double lightRayDirNorm = sqrt(lightRayDir[0]*lightRayDir[0] + lightRayDir[1]*lightRayDir[1] + lightRayDir[2]*lightRayDir[2]);
-    //     lightRayDir[0] /= lightRayDirNorm;
-    //     lightRayDir[1] /= lightRayDirNorm;
-    //     lightRayDir[2] /= lightRayDirNorm;
+        double lightRayDirNorm = sqrt(lightRayDir[0] * lightRayDir[0] + lightRayDir[1] * lightRayDir[1] + lightRayDir[2] * lightRayDir[2]);
+        lightRayDir[0] /= lightRayDirNorm;
+        lightRayDir[1] /= lightRayDirNorm;
+        lightRayDir[2] /= lightRayDirNorm;
 
-    //     double lightRayActualDir[3];
-    //     lightRayActualDir[0] = -1 * lightRayDir[0];
-    //     lightRayActualDir[1] = -1 * lightRayDir[1];
-    //     lightRayActualDir[2] = -1 * lightRayDir[2];
-    //     intersection temp = obscure(nl.pos, lightRayActualDir);
-    //     // double t1 = (nl.pos[0] - closestIntersection.point[0])/lightRayDir[0];
-    //     // intersection temp = obscure(closestIntersection.point, lightRayDir);
-    //     double t1 = (nl.pos[0] - closestIntersection.point[0])/lightRayDir[0];
-    //     // printf("t1: %f\n", t1);
-    //     // printf("temp.t: %f\n", temp.t);
-    //     // //no obstructions
-    //     double normNormal = sqrt(nl.dir[0]*nl.dir[0] + nl.dir[1]*nl.dir[1] + nl.dir[2]*nl.dir[2]);
-    //     nl.dir[0] /= normNormal;
-    //     nl.dir[1] /= normNormal;
-    //     nl.dir[2] /= normNormal;
-    //     double angle = acos(lightRayActualDir[0]*nl.dir[0] + lightRayActualDir[1]*nl.dir[1] + lightRayActualDir[2]*nl.dir[2]);
-    //     if(temp.t == t1 && angle <= nl.cutoff){
-    //         double LdotN = lightRayDir[0]*closestIntersection.normal[0] + lightRayDir[1]*closestIntersection.normal[1] + lightRayDir[2]*closestIntersection.normal[2];
-    //         LdotN = LdotN < 0 ? 0 : LdotN;
-    //         double distance = t1;
-    //         double scalingFactor = exp(-nl.falloff*distance*distance);
-    //         lambert += LdotN*scalingFactor;
-    //         // printf("lambert: %f\n", lambert);
-    //     }
-    // }
+        double lightRayActualDir[3];
+        lightRayActualDir[0] = -1 * lightRayDir[0];
+        lightRayActualDir[1] = -1 * lightRayDir[1];
+        lightRayActualDir[2] = -1 * lightRayDir[2];
+        intersection temp = obscure(sl.pos, lightRayActualDir);
+        // double t1 = (sl.pos[0] - closestIntersection.point[0])/lightRayDir[0];
+        // intersection temp = obscure(closestIntersection.point, lightRayDir);
+        double t1 = (sl.pos[0] - closestIntersection.point[0]) / lightRayDir[0];
 
-    // if (lambert>0.0005){
-    //     printf("OK %f\n", lambert);
-    // }
+        double reflectedRayDir[3];
+        double LActdotN = lightRayActualDir[0] * closestIntersection.normal[0] + lightRayActualDir[1] * closestIntersection.normal[1] + lightRayActualDir[2] * closestIntersection.normal[2];
 
-    closestIntersection.color[0] = closestIntersection.color[0] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[0];
-    closestIntersection.color[1] = closestIntersection.color[1] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[1];
-    closestIntersection.color[2] = closestIntersection.color[2] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[2];
+        reflectedRayDir[0] = lightRayActualDir[0] - 2 * LActdotN * closestIntersection.normal[0];
+        reflectedRayDir[1] = lightRayActualDir[1] - 2 * LActdotN * closestIntersection.normal[1];
+        reflectedRayDir[2] = lightRayActualDir[2] - 2 * LActdotN * closestIntersection.normal[2];
+
+        double RdotL = reflectedRayDir[0] * lightRayDir[0] + reflectedRayDir[1] * lightRayDir[1] + reflectedRayDir[2] * lightRayDir[2];
+
+        // NOTSURE
+        RdotL = RdotL < 0 ? 0 : RdotL;
+        double slnorm = sqrt(sl.dir[0] * sl.dir[0] + sl.dir[1] * sl.dir[1] + sl.dir[2] * sl.dir[2]);
+        sl.dir[0] /= slnorm;
+        sl.dir[1] /= slnorm;
+        sl.dir[2] /= slnorm;
+
+        double angle = lightRayDir[0] * (-1 * sl.dir[0]) + lightRayDir[1] * (-1 * sl.dir[1]) + lightRayDir[2] * (-1 * sl.dir[2]);
+        angle = acos(angle) * 180 / PI;
+        // printf("t1: %f\n", t1);
+        // printf("temp.t: %f\n", temp.t);
+        // //no obstructions
+        // printf("angle: %f\n", angle);
+        // if ((temp.t - t1) * (temp.t - t1) < threshhold && angle<=sl.cutoff)
+
+        if ((temp.t - t1) * (temp.t - t1) < threshhold)
+        {
+            double LdotN = lightRayDir[0] * closestIntersection.normal[0] + lightRayDir[1] * closestIntersection.normal[1] + lightRayDir[2] * closestIntersection.normal[2];
+            LdotN = LdotN < 0 ? 0 : LdotN;
+            double distance = t1;
+
+            double scalingFactor = exp(-sl.falloff * distance * distance);
+            // printf("normals: %f %f %f\n", closestIntersection.normal[0], closestIntersection.normal[1], closestIntersection.normal[2]);
+            // printf("Light ray Dirs: %f %f %f\n", lightRayDir[0], lightRayDir[1], lightRayDir[2]);
+            // printf("LdotN's %f\n", LdotN);
+            // printf("Distance: %f\n", distance);
+
+            // lambert += LdotN*scalingFactor;
+            // phong+= pow(RdotL, closestIntersection.shine)*scalingFactor;
+
+            lambert += LdotN;
+            phong += pow(RdotL, closestIntersection.shine);
+            // printf("Here");
+            // printf("Parameters: falloff: %f,  LdotN: %f, distance: %f, scalingFactor: %f, lambert: %f\n", LdotN, distance, scalingFactor, lambert);
+            // printf("lambert: %f\n", lambert);
+        }
+        // else{
+        //     printf("ERROR\n");
+        // }
+    }
+    printf("phong: %f\n", phong);
+    closestIntersection.color[0] = closestIntersection.color[0] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[0] + phong * closestIntersection.ks * closestIntersection.color[0];
+    closestIntersection.color[1] = closestIntersection.color[1] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[1] + phong * closestIntersection.ks * closestIntersection.color[1];
+    closestIntersection.color[2] = closestIntersection.color[2] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[2] + phong * closestIntersection.ks * closestIntersection.color[2];
+
+    // closestIntersection.color[0] = closestIntersection.color[0] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[0];
+    // closestIntersection.color[1] = closestIntersection.color[1] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[1];
+    // closestIntersection.color[2] = closestIntersection.color[2] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[2];
 
     // printf("r: %f g: %f b: %f\n", closestIntersection.color[0], closestIntersection.color[1], closestIntersection.color[2]);
     // closestIntersection.color[0] = lambert*closestIntersection.kd*closestIntersection.color[0];
