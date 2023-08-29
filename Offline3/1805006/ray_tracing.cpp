@@ -9,6 +9,9 @@
 #include <fstream>
 #include <vector>
 #include "./bitmap_image.hpp"
+
+#include <cassert>
+
 using namespace std;
 
 #define phi (70.53 * M_PI / 180)
@@ -227,13 +230,13 @@ public:
     void calcPoints()
     {
         double temp = baseLength / 2;
-        points[0][0] = x ;
+        points[0][0] = x;
         points[0][1] = y + baseLength;
-        points[0][2] = z ;
+        points[0][2] = z;
 
         points[3][0] = x + baseLength;
         points[3][1] = y + baseLength;
-        points[3][2] = z ;
+        points[3][2] = z;
 
         points[2][0] = x + baseLength;
         points[2][1] = y;
@@ -361,10 +364,14 @@ void initGL()
 // double lookat_x = 0, lookat_y = 0, lookat_z = 0;
 // double up_x = -1 / sqrt(6), up_y = 2 / sqrt(6), up_z = -1 / sqrt(6);
 
-double eyeat_x = 100, eyeat_y = -100, eyeat_z = 100;
-double lookat_x = 0, lookat_y = 0, lookat_z = 0;
+// double eyeat_x = 100, eyeat_y = -100, eyeat_z = 100;
+// double lookat_x = 0, lookat_y = 0, lookat_z = 0;
+// // double up_x = -20 / sqrt(400 + 400 + 10000), up_y = 100 / sqrt(sqrt(400 + 400 + 10000)), up_z = -20 / sqrt(400 + 400 + 10000);
+// double temp_right_x = 1, temp_right_y = 1, temp_right_z = 0;
+double eyeat_x = 50, eyeat_y = 50, eyeat_z = 20;
+double lookat_x = 0, lookat_y = 0, lookat_z = 20;
 // double up_x = -20 / sqrt(400 + 400 + 10000), up_y = 100 / sqrt(sqrt(400 + 400 + 10000)), up_z = -20 / sqrt(400 + 400 + 10000);
-double temp_right_x = 1, temp_right_y = 1, temp_right_z = 0;
+double temp_right_x = -1, temp_right_y = 1, temp_right_z = 0;
 double tempdir_x = lookat_x - eyeat_x, tempdir_y = lookat_y - eyeat_y, tempdir_z = lookat_z - eyeat_z;
 // double tempup_x = -eyeat_y , tempup_y = eyeat_z + eyeat_x , tempup_z = -eyeat_y;
 double tempup_x = temp_right_y * tempdir_z - temp_right_z * tempdir_y, tempup_y = temp_right_z * tempdir_x - temp_right_x * tempdir_z, tempup_z = temp_right_x * tempdir_y - temp_right_y * tempdir_x;
@@ -732,7 +739,7 @@ void drawcheckerboard()
             glBegin(GL_QUADS);
             glVertex3f(i * checkerCellWidth, j * checkerCellWidth, 0);
             glVertex3f((i + 1) * checkerCellWidth, j * checkerCellWidth, 0);
-            glVertex3f((i + 1) * checkerCellWidth,  (j + 1) * checkerCellWidth, 0);
+            glVertex3f((i + 1) * checkerCellWidth, (j + 1) * checkerCellWidth, 0);
             glVertex3f((i)*checkerCellWidth, (j + 1) * checkerCellWidth, 0);
             glEnd();
             color = 1 - color;
@@ -1674,9 +1681,9 @@ intersection intersectSphere(double rayBegin[], double rayDir[], sphere s)
     ans.type = 1;
     // ans.id = s.id;
     ans.s = s;
-    ans.point[0] = ro[0] + t * rayDir[0];
-    ans.point[1] = ro[1] + t * rayDir[1];
-    ans.point[2] = ro[2] + t * rayDir[2];
+    ans.point[0] = rayBegin[0] + t * rayDir[0];
+    ans.point[1] = rayBegin[1] + t * rayDir[1];
+    ans.point[2] = rayBegin[2] + t * rayDir[2];
 
     ans.normal[0] = ans.point[0] - s.center_x;
     ans.normal[1] = ans.point[1] - s.center_y;
@@ -1852,7 +1859,8 @@ intersection intersectTriangle(double rayBegin[], double rayDir[], double v1[], 
     temp.point[2] = rayBegin[2] + t * rayDir[2];
 
     // double plane[4] = getTrianglePlane(v1, v2, v3);
-    tempPoint plane = getTrianglePlane(v1, v2, v3);
+    tempPoint plane = tempPoint();
+    plane = getTrianglePlane(v1, v2, v3);
     temp.normal[0] = plane.p[0];
     temp.normal[1] = plane.p[1];
     temp.normal[2] = plane.p[2];
@@ -1872,15 +1880,17 @@ intersection intersectQuadrilateral(double rayBegin[], double rayDir[], double v
     // double t = farPlane;
     intersection ans = intersection();
     ans.t = farPlane;
-    intersection temp = intersectTriangle(rayBegin, rayDir, v1, v2, v3);
+    intersection temp = intersection();
+    temp = intersectTriangle(rayBegin, rayDir, v1, v2, v3);
     if (temp.t > nearPlane && temp.t < ans.t)
     {
         ans = temp;
     }
-    temp = intersectTriangle(rayBegin, rayDir, v1, v3, v4);
-    if (temp.t > nearPlane && temp.t < ans.t)
+    intersection temp2 = intersection();
+    temp2 = intersectTriangle(rayBegin, rayDir, v1, v3, v4);
+    if (temp2.t > nearPlane && temp2.t < ans.t)
     {
-        ans = temp;
+        ans = temp2;
     }
     return ans;
 }
@@ -1896,27 +1906,27 @@ intersection intersectCube(double rayBegin[], double rayDir[], cube c)
     {
         ans = temp;
     }
-    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[4], c.points[5], c.points[6], c.points[7]);
+    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[4], c.points[7], c.points[6], c.points[5]);
     if (temp.t > 0 && temp.t < ans.t)
     {
         ans = temp;
     }
-    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[0], c.points[1], c.points[5], c.points[4]);
+    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[0], c.points[4], c.points[5], c.points[1]);
     if (temp.t > 0 && temp.t < ans.t)
     {
         ans = temp;
     }
-    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[1], c.points[2], c.points[6], c.points[5]);
+    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[1], c.points[5], c.points[6], c.points[2]);
     if (temp.t > 0 && temp.t < ans.t)
     {
         ans = temp;
     }
-    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[2], c.points[3], c.points[7], c.points[6]);
+    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[2], c.points[6], c.points[7], c.points[3]);
     if (temp.t > 0 && temp.t < ans.t)
     {
         ans = temp;
     }
-    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[3], c.points[0], c.points[4], c.points[7]);
+    temp = intersectQuadrilateral(rayBegin, rayDir, c.points[3], c.points[7], c.points[4], c.points[0]);
     if (temp.t > 0 && temp.t < ans.t)
     {
         ans = temp;
@@ -2028,7 +2038,7 @@ intersection intersectFloor(double rayBegin[], double rayDir[])
 
     ans.normal[0] = 0;
     ans.normal[1] = 0;
-    ans.normal[2] = rayBegin[1] > 0 ? 1 : -1;
+    ans.normal[2] = rayBegin[2] > 0 ? 1 : -1;
 
     double col = 0;
     ans.color[0] = col;
@@ -2112,6 +2122,8 @@ intersection obscure(double rayOrg[], double rayDir[])
         if (tempIntersection.t > 0 && tempIntersection.t < closestIntersection.t)
         {
             closestIntersection = tempIntersection;
+            closestIntersection.type = 1;
+            closestIntersection.id = i;
         }
     }
     for (int i = 0; i < numCubes; i++)
@@ -2162,6 +2174,8 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
         if (tempIntersection.t > 0 && tempIntersection.t < closestIntersection.t)
         {
             closestIntersection = tempIntersection;
+            closestIntersection.type = 1;
+            closestIntersection.id = i;
         }
     }
     for (int i = 0; i < numCubes; i++)
@@ -2170,6 +2184,12 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
         if (tempIntersection.t > 0 && tempIntersection.t < closestIntersection.t)
         {
             closestIntersection = tempIntersection;
+            closestIntersection.type = 2;
+            closestIntersection.id = i;
+            // printf("normals: %f %f %f\n", closestIntersection.normal[0], closestIntersection.normal[1],closestIntersection.normal[2]);
+            // closestIntersection.normal[0] = 0;
+            // closestIntersection.normal[1] = 1;
+            // closestIntersection.normal[2] = 0;
         }
     }
 
@@ -2179,6 +2199,8 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
         if (tempIntersection.t > 0 && tempIntersection.t < closestIntersection.t)
         {
             closestIntersection = tempIntersection;
+            closestIntersection.type = 3;
+            closestIntersection.id = i;
         }
     }
 
@@ -2187,6 +2209,7 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
     if (tempIntersection.t > 0 && tempIntersection.t < closestIntersection.t)
     {
         closestIntersection = tempIntersection;
+        closestIntersection.type = 4;
     }
 
     if (closestIntersection.t == farPlane)
@@ -2199,10 +2222,14 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
 
     double lambert = 0, phong = 0;
     for (int i = 0; i < numNormalLight; i++)
+
+    // for (int i = 0; i < numSpotLight; i++)
     {
         // printf("NormalLight %d\n", i);
         // printf("param: %f %f %f\n", normalLights[i].pos[0], normalLights[i].pos[1], normalLights[i].pos[2]);
+
         normalLight nl = normalLights[i];
+        // spotLight nl = spotLights[i];
         double lightRayDir[3];
 
         lightRayDir[0] = nl.pos[0] - closestIntersection.point[0];
@@ -2228,10 +2255,12 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
         // printf("t1: %f\n", t1);
         // printf("temp.t: %f\n", temp.t);
         // //no obstructions
+        // printf("positions: %f %f %f\n", nl.pos[0], nl.pos[1], nl.pos[2]);
+
         if ((temp.t - t1) * (temp.t - t1) < threshhold)
         {
             double LdotN = lightRayDir[0] * closestIntersection.normal[0] + lightRayDir[1] * closestIntersection.normal[1] + lightRayDir[2] * closestIntersection.normal[2];
-            LdotN = LdotN < 0 ? 0 : LdotN;
+            LdotN = LdotN < 0 ? -LdotN : LdotN;
             double distance = t1;
 
             double scalingFactor = exp(-nl.falloff * distance * distance);
@@ -2243,13 +2272,20 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
             // lambert += LdotN*scalingFactor;
             lambert += LdotN;
 
+            double RdotL = closestIntersection.newRayDir[0] * lightRayDir[0] + closestIntersection.newRayDir[1] * lightRayDir[1] + closestIntersection.newRayDir[2] * lightRayDir[2];
+            // NOTSURE
+            RdotL = RdotL < 0 ? 0 : RdotL;
+            phong += pow(RdotL, closestIntersection.shine);
+
             // printf("Parameters: falloff: %f,  LdotN: %f, distance: %f, scalingFactor: %f, lambert: %f\n", LdotN, distance, scalingFactor, lambert);
             // printf("lambert: %f\n", lambert);
         }
         // else{
         //     printf("ERROR\n");
         // }
+        // printf("%.10f\n", lambert * 10000000000);
     }
+    // printf("lambert1 %.10f\n", lambert);
 
     for (int i = 0; i < numSpotLight; i++)
     {
@@ -2279,31 +2315,40 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
         // intersection temp = obscure(closestIntersection.point, lightRayDir);
         double t1 = (sl.pos[0] - closestIntersection.point[0]) / lightRayDir[0];
 
-        double reflectedRayDir[3];
-        double LActdotN = lightRayActualDir[0] * closestIntersection.normal[0] + lightRayActualDir[1] * closestIntersection.normal[1] + lightRayActualDir[2] * closestIntersection.normal[2];
+        // double reflectedRayDir[3];
+        // double LActdotN = lightRayActualDir[0] * closestIntersection.normal[0] + lightRayActualDir[1] * closestIntersection.normal[1] + lightRayActualDir[2] * closestIntersection.normal[2];
 
-        reflectedRayDir[0] = lightRayActualDir[0] - 2 * LActdotN * closestIntersection.normal[0];
-        reflectedRayDir[1] = lightRayActualDir[1] - 2 * LActdotN * closestIntersection.normal[1];
-        reflectedRayDir[2] = lightRayActualDir[2] - 2 * LActdotN * closestIntersection.normal[2];
+        // reflectedRayDir[0] = lightRayActualDir[0] - 2 * LActdotN * closestIntersection.normal[0];
+        // reflectedRayDir[1] = lightRayActualDir[1] - 2 * LActdotN * closestIntersection.normal[1];
+        // reflectedRayDir[2] = lightRayActualDir[2] - 2 * LActdotN * closestIntersection.normal[2];
 
-        double RdotL = reflectedRayDir[0] * lightRayDir[0] + reflectedRayDir[1] * lightRayDir[1] + reflectedRayDir[2] * lightRayDir[2];
+        // printf("normal: %f %f %f\n", closestIntersection.normal[0], closestIntersection.normal[1], closestIntersection.normal[2]);
+        // printf("lightRayDir %f %f %f\n", lightRayDir[0], lightRayDir[1], lightRayDir[2]);
+        // printf("lightRayActualDirs %f %f %f\n", lightRayActualDir[0], lightRayActualDir[1], lightRayActualDir[2]);
+        // printf("reflectedRayDirs %f %f %f\n\n", reflectedRayDir[0], reflectedRayDir[1], reflectedRayDir[2]);
+
+        // double RdotL = reflectedRayDir[0] * lightRayDir[0] + reflectedRayDir[1] * lightRayDir[1] + reflectedRayDir[2] * lightRayDir[2];
+        double RdotL = closestIntersection.newRayDir[0] * lightRayDir[0] + closestIntersection.newRayDir[1] * lightRayDir[1] + closestIntersection.newRayDir[2] * lightRayDir[2];
 
         // NOTSURE
         RdotL = RdotL < 0 ? 0 : RdotL;
+
         double slnorm = sqrt(sl.dir[0] * sl.dir[0] + sl.dir[1] * sl.dir[1] + sl.dir[2] * sl.dir[2]);
         sl.dir[0] /= slnorm;
         sl.dir[1] /= slnorm;
         sl.dir[2] /= slnorm;
 
-        double angle = lightRayDir[0] * (-1 * sl.dir[0]) + lightRayDir[1] * (-1 * sl.dir[1]) + lightRayDir[2] * (-1 * sl.dir[2]);
+        // double angle = lightRayDir[0] * (-1 * sl.dir[0]) + lightRayDir[1] * (-1 * sl.dir[1]) + lightRayDir[2] * (-1 * sl.dir[2]);
+        double angle = lightRayDir[0] * (sl.dir[0]) + lightRayDir[1] * (sl.dir[1]) + lightRayDir[2] * (sl.dir[2]);
         angle = acos(angle) * 180 / PI;
         // printf("t1: %f\n", t1);
         // printf("temp.t: %f\n", temp.t);
         // //no obstructions
         // printf("angle: %f\n", angle);
         // if ((temp.t - t1) * (temp.t - t1) < threshhold && angle<=sl.cutoff)
-
-        if ((temp.t - t1) * (temp.t - t1) < threshhold)
+        // printf("Anngle: %f\n", angle);
+        // printf("Cutoff: %f\n", sl.cutoff);
+        if ((temp.t - t1) * (temp.t - t1) < threshhold && angle <= sl.cutoff)
         {
             double LdotN = lightRayDir[0] * closestIntersection.normal[0] + lightRayDir[1] * closestIntersection.normal[1] + lightRayDir[2] * closestIntersection.normal[2];
             LdotN = LdotN < 0 ? 0 : LdotN;
@@ -2319,7 +2364,12 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
             // phong+= pow(RdotL, closestIntersection.shine)*scalingFactor;
 
             lambert += LdotN;
+            // printf("")
+            
             phong += pow(RdotL, closestIntersection.shine);
+            // printf("RdotL: %f\n", RdotL);
+            // printf("phong: %f\n", phong);
+            // printf("shine: %f\n", closestIntersection.shine);
             // printf("Here");
             // printf("Parameters: falloff: %f,  LdotN: %f, distance: %f, scalingFactor: %f, lambert: %f\n", LdotN, distance, scalingFactor, lambert);
             // printf("lambert: %f\n", lambert);
@@ -2328,10 +2378,79 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
         //     printf("ERROR\n");
         // }
     }
+
     // printf("phong: %f\n", phong);
-    closestIntersection.color[0] = closestIntersection.color[0] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[0] + phong * closestIntersection.ks * closestIntersection.color[0];
-    closestIntersection.color[1] = closestIntersection.color[1] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[1] + phong * closestIntersection.ks * closestIntersection.color[1];
-    closestIntersection.color[2] = closestIntersection.color[2] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[2] + phong * closestIntersection.ks * closestIntersection.color[2];
+    // printf("lambert2 %.10f\n", lambert);
+
+    // DEBUG
+    double r = (closestIntersection.normal[0] + 1) / 2;
+    double g = (closestIntersection.normal[1] + 1) / 2;
+    double b = (closestIntersection.normal[2] + 1) / 2;
+    double norm = closestIntersection.normal[0] * closestIntersection.normal[0] + closestIntersection.normal[1] * closestIntersection.normal[1] + closestIntersection.normal[2] * closestIntersection.normal[2];
+    // if ((norm - 1) * (norm - 1) < threshhold)
+    // {
+    // }
+    // else
+    {
+
+        if (closestIntersection.type == 1)
+        {
+            double tempnormx = closestIntersection.point[0] - spheres[closestIntersection.id].center_x;
+            double tempnormy = closestIntersection.point[1] - spheres[closestIntersection.id].center_y;
+            double tempnormz = closestIntersection.point[2] - spheres[closestIntersection.id].center_z;
+
+            double tempnorm = sqrt(tempnormx * tempnormx + tempnormy * tempnormy + tempnormz * tempnormz);
+            tempnormx /= tempnorm;
+            tempnormy /= tempnorm;
+            tempnormz /= tempnorm;
+            // printf("Normal: %f %f %f\n", closestIntersection.normal[0], closestIntersection.normal[1], closestIntersection.normal[2]);
+            // printf("Point: %f %f %f\n", closestIntersection.point[0], closestIntersection.point[1], closestIntersection.point[2]);
+            // printf("norm: %f, %f, %f\n", tempnormx, tempnormy, tempnormz);
+            // printf("center: %f, %f, %f\n", spheres[closestIntersection.id].center_x, spheres[closestIntersection.id].center_y, spheres[closestIntersection.id].center_z);
+        }
+        // printf("");
+        // printf("%f\n", norm);
+    }
+    // printf("Normal Length: %f\n", closestIntersection.normal[0] * closestIntersection.normal[0] + closestIntersection.normal[1] * closestIntersection.normal[1] + closestIntersection.normal[2] * closestIntersection.normal[2]);
+    // closestIntersection.color[0] = r;
+    // closestIntersection.color[1] = g;
+    // closestIntersection.color[2] = b;
+
+    r = closestIntersection.color[0];
+    g = closestIntersection.color[1];
+    b = closestIntersection.color[2];
+
+    double dr = closestIntersection.kd * lambert * r;
+    double dg = closestIntersection.kd * lambert * g;
+    double db = closestIntersection.kd * lambert * b;
+
+    double ar = closestIntersection.ka * r;
+    double ag = closestIntersection.ka * g;
+    double ab = closestIntersection.ka * b;
+
+    double sr = closestIntersection.ks * phong * r;
+    double sg = closestIntersection.ks * phong * g;
+    double sb = closestIntersection.ks * phong * b;
+
+    intersection temp = intersection();
+    temp.color[0] = 0;
+    temp.color[1] = 0;
+    temp.color[2] = 0;
+
+    if (round > 1)
+    {
+        double tempPoint[3];
+        tempPoint[0] = closestIntersection.point[0] + closestIntersection.newRayDir[0] * 0.0001;
+        tempPoint[1] = closestIntersection.point[1] + closestIntersection.newRayDir[1] * 0.0001;
+        tempPoint[2] = closestIntersection.point[2] + closestIntersection.newRayDir[2] * 0.0001;
+
+        temp = rayTrace(tempPoint, closestIntersection.newRayDir, round - 1);
+    }
+
+    // ar = dr = sr = 0;
+    closestIntersection.color[0] = ar + dr + sr + temp.color[0] * closestIntersection.kr;
+    closestIntersection.color[1] = ag + dg + sg + temp.color[1] * closestIntersection.kr;
+    closestIntersection.color[2] = ab + db + sb + temp.color[2] * closestIntersection.kr;
 
     // closestIntersection.color[0] = closestIntersection.color[0] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[0];
     // closestIntersection.color[1] = closestIntersection.color[1] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[1];
@@ -2346,12 +2465,12 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
     // closestIntersection.color[1] = closestIntersection.color[1]*closestIntersection.ka;
     // closestIntersection.color[2] = closestIntersection.color[2]*closestIntersection.ka;
 
-    if (round == 1)
-    {
-        return closestIntersection;
-    }
+    // if (round == 1)
+    // {
+    //     return closestIntersection;
+    // }
 
-    printf("Error\n");
+    // printf("Error\n");
     return closestIntersection;
 }
 
@@ -2419,7 +2538,7 @@ void capture()
 
             // rayorg, raydir, closestint, round
 
-            intersection closestIntersection = rayTrace(currPixel, currRay, 1);
+            intersection closestIntersection = rayTrace(currPixel, currRay, 3);
 
             if (closestIntersection.t < farPlane)
             {
