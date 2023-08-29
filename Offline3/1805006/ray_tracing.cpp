@@ -132,35 +132,35 @@ public:
     void calcPoints()
     {
         points[0][0] = blX;
-        points[0][1] = blY;
+        points[0][1] = blY + baseLength;
         points[0][2] = blZ;
 
         points[1][0] = blX + baseLength;
-        points[1][1] = blY;
+        points[1][1] = blY + baseLength;
         points[1][2] = blZ;
 
         points[2][0] = blX + baseLength;
         points[2][1] = blY;
-        points[2][2] = blZ + baseLength;
+        points[2][2] = blZ;
 
         points[3][0] = blX;
         points[3][1] = blY;
-        points[3][2] = blZ + baseLength;
+        points[3][2] = blZ;
 
         points[4][0] = blX;
         points[4][1] = blY + baseLength;
-        points[4][2] = blZ;
+        points[4][2] = blZ + baseLength;
 
         points[5][0] = blX + baseLength;
         points[5][1] = blY + baseLength;
-        points[5][2] = blZ;
+        points[5][2] = blZ + baseLength;
 
         points[6][0] = blX + baseLength;
-        points[6][1] = blY + baseLength;
+        points[6][1] = blY;
         points[6][2] = blZ + baseLength;
 
         points[7][0] = blX;
-        points[7][1] = blY + baseLength;
+        points[7][1] = blY;
         points[7][2] = blZ + baseLength;
     }
     void printCube()
@@ -227,25 +227,25 @@ public:
     void calcPoints()
     {
         double temp = baseLength / 2;
-        points[0][0] = x - temp;
-        points[0][1] = y;
-        points[0][2] = z - temp;
+        points[0][0] = x ;
+        points[0][1] = y + baseLength;
+        points[0][2] = z ;
 
-        points[3][0] = x + temp;
-        points[3][1] = y;
-        points[3][2] = z - temp;
+        points[3][0] = x + baseLength;
+        points[3][1] = y + baseLength;
+        points[3][2] = z ;
 
-        points[2][0] = x + temp;
+        points[2][0] = x + baseLength;
         points[2][1] = y;
-        points[2][2] = z + temp;
+        points[2][2] = z;
 
-        points[1][0] = x - temp;
+        points[1][0] = x;
         points[1][1] = y;
-        points[1][2] = z + temp;
+        points[1][2] = z;
 
-        points[4][0] = x;
-        points[4][1] = y + height;
-        points[4][2] = z;
+        points[4][0] = x + temp;
+        points[4][1] = y + temp;
+        points[4][2] = z + height;
     }
     void printPyramid()
     {
@@ -361,10 +361,10 @@ void initGL()
 // double lookat_x = 0, lookat_y = 0, lookat_z = 0;
 // double up_x = -1 / sqrt(6), up_y = 2 / sqrt(6), up_z = -1 / sqrt(6);
 
-double eyeat_x = 100, eyeat_y = 100, eyeat_z = 100;
+double eyeat_x = 100, eyeat_y = -100, eyeat_z = 100;
 double lookat_x = 0, lookat_y = 0, lookat_z = 0;
 // double up_x = -20 / sqrt(400 + 400 + 10000), up_y = 100 / sqrt(sqrt(400 + 400 + 10000)), up_z = -20 / sqrt(400 + 400 + 10000);
-double temp_right_x = 1, temp_right_y = 0, temp_right_z = -1;
+double temp_right_x = 1, temp_right_y = 1, temp_right_z = 0;
 double tempdir_x = lookat_x - eyeat_x, tempdir_y = lookat_y - eyeat_y, tempdir_z = lookat_z - eyeat_z;
 // double tempup_x = -eyeat_y , tempup_y = eyeat_z + eyeat_x , tempup_z = -eyeat_y;
 double tempup_x = temp_right_y * tempdir_z - temp_right_z * tempdir_y, tempup_y = temp_right_z * tempdir_x - temp_right_x * tempdir_z, tempup_z = temp_right_x * tempdir_y - temp_right_y * tempdir_x;
@@ -721,7 +721,7 @@ void drawcheckerboard()
     glColor3f(1, 1, 1);
     // cout<<checkerCellWidth<<endl;
     int lim = 200;
-    int color = 1;
+    int color = 0;
     // printf("%lf\n", checkerCellWidth);
     for (int i = -lim; i < lim; i++)
     {
@@ -730,10 +730,10 @@ void drawcheckerboard()
         for (int j = -lim; j < lim; j++)
         {
             glBegin(GL_QUADS);
-            glVertex3f(i * checkerCellWidth, 0, j * checkerCellWidth);
-            glVertex3f((i + 1) * checkerCellWidth, 0, j * checkerCellWidth);
-            glVertex3f((i + 1) * checkerCellWidth, 0, (j + 1) * checkerCellWidth);
-            glVertex3f((i)*checkerCellWidth, 0, (j + 1) * checkerCellWidth);
+            glVertex3f(i * checkerCellWidth, j * checkerCellWidth, 0);
+            glVertex3f((i + 1) * checkerCellWidth, j * checkerCellWidth, 0);
+            glVertex3f((i + 1) * checkerCellWidth,  (j + 1) * checkerCellWidth, 0);
+            glVertex3f((i)*checkerCellWidth, (j + 1) * checkerCellWidth, 0);
             glEnd();
             color = 1 - color;
             glColor3f(color, color, color);
@@ -2013,13 +2013,13 @@ intersection intersectPyramid(double rayBegin[], double rayDir[], pyramid p)
 
 intersection intersectFloor(double rayBegin[], double rayDir[])
 {
-    if (rayDir[1] == 0)
+    if (rayDir[2] == 0)
     {
         intersection ans = intersection();
         ans.t = -1;
         return ans;
     }
-    double t = -rayBegin[1] / rayDir[1];
+    double t = -rayBegin[2] / rayDir[2];
     intersection ans = intersection();
     ans.t = t;
     ans.point[0] = rayBegin[0] + t * rayDir[0];
@@ -2027,8 +2027,8 @@ intersection intersectFloor(double rayBegin[], double rayDir[])
     ans.point[2] = rayBegin[2] + t * rayDir[2];
 
     ans.normal[0] = 0;
-    ans.normal[1] = rayBegin[1] > 0 ? 1 : -1;
-    ans.normal[2] = 0;
+    ans.normal[1] = 0;
+    ans.normal[2] = rayBegin[1] > 0 ? 1 : -1;
 
     double col = 0;
     ans.color[0] = col;
@@ -2036,9 +2036,9 @@ intersection intersectFloor(double rayBegin[], double rayDir[])
     ans.color[2] = col;
 
     int x = (int)floor(ans.point[0] / checkerCellWidth);
-    int z = (int)floor(ans.point[2] / checkerCellWidth);
+    int y = (int)floor(ans.point[1] / checkerCellWidth);
 
-    if ((x + z) % 2)
+    if ((x + y) % 2 == 0)
     {
         ans.color[0] = 1 - ans.color[0];
         ans.color[1] = 1 - ans.color[1];
@@ -2328,7 +2328,7 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
         //     printf("ERROR\n");
         // }
     }
-    printf("phong: %f\n", phong);
+    // printf("phong: %f\n", phong);
     closestIntersection.color[0] = closestIntersection.color[0] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[0] + phong * closestIntersection.ks * closestIntersection.color[0];
     closestIntersection.color[1] = closestIntersection.color[1] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[1] + phong * closestIntersection.ks * closestIntersection.color[1];
     closestIntersection.color[2] = closestIntersection.color[2] * closestIntersection.ka + lambert * closestIntersection.kd * closestIntersection.color[2] + phong * closestIntersection.ks * closestIntersection.color[2];
