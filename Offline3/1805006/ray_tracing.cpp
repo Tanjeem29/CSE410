@@ -706,7 +706,7 @@ void drawSphere(sphere s)
 //     glutSwapBuffers();  // Render now
 // }
 
-void drawcheckerboard()
+void drawcheckerboard2()
 {
     drawAxes();
     // glLineWidth(3);
@@ -729,6 +729,7 @@ void drawcheckerboard()
     // cout<<checkerCellWidth<<endl;
     int lim = 200;
     int color = 0;
+
     // printf("%lf\n", checkerCellWidth);
     for (int i = -lim; i < lim; i++)
     {
@@ -753,6 +754,67 @@ void drawcheckerboard()
     // glVertex3f(checkerCellWidth, 0, -checkerCellWidth);
     // glEnd();
 }
+void drawcheckerboard()
+{
+    drawAxes();
+    // glLineWidth(3);
+    // glColor3f(1, 0, 0);
+    // // cout<<checkerCellWidth<<endl;
+    // int lim = 50;
+    // printf("%lf\n", checkerCellWidth);
+    // for (int i = -lim; i < lim; i++)
+    // {
+    //     glBegin(GL_LINES);
+    //     glVertex3f(-lim * checkerCellWidth, 0, i * checkerCellWidth);
+    //     glVertex3f(lim * checkerCellWidth, 0, i * checkerCellWidth);
+    //     glEnd();
+    //     glBegin(GL_LINES);
+    //     glVertex3f(i * checkerCellWidth, 0, -lim * checkerCellWidth);
+    //     glVertex3f(i * checkerCellWidth, 0, lim * checkerCellWidth);
+    //     glEnd();
+    // }
+    glColor3f(1, 1, 1);
+    // cout<<checkerCellWidth<<endl;
+    int lim = 200;
+    int x_lo = -lim, x_hi = lim, y_lo = -lim, y_hi = lim;
+    int color = 0;
+
+    int curr_x = eyeat_x / checkerCellWidth;
+    int curr_y = eyeat_y / checkerCellWidth;
+
+    x_lo += curr_x;
+    x_hi += curr_x;
+
+    y_lo += curr_y;
+    y_hi += curr_y;
+
+    color = (abs(curr_x) + abs(curr_y)) % 2;
+
+    // printf("%lf\n", checkerCellWidth);
+    for (int i = x_lo; i < x_hi; i++)
+    {
+        color = 1 - color;
+        glColor3f(color, color, color);
+        for (int j = y_lo; j < y_hi; j++)
+        {
+            glBegin(GL_QUADS);
+            glVertex3f(i * checkerCellWidth, j * checkerCellWidth, 0);
+            glVertex3f((i + 1) * checkerCellWidth, j * checkerCellWidth, 0);
+            glVertex3f((i + 1) * checkerCellWidth, (j + 1) * checkerCellWidth, 0);
+            glVertex3f((i)*checkerCellWidth, (j + 1) * checkerCellWidth, 0);
+            glEnd();
+            color = 1 - color;
+            glColor3f(color, color, color);
+        }
+    }
+    // glBegin(GL_QUADS);
+    // glVertex3f(checkerCellWidth, 0, checkerCellWidth);
+    // glVertex3f(-checkerCellWidth, 0, checkerCellWidth);
+    // glVertex3f(-checkerCellWidth, 0, -checkerCellWidth);
+    // glVertex3f(checkerCellWidth, 0, -checkerCellWidth);
+    // glEnd();
+}
+
 void drawSpheres()
 {
     for (int i = 0; i < numSpheres; i++)
