@@ -272,6 +272,29 @@ public:
 pyramid pyramids[100];
 int numPyramids = 0;
 
+class normalLight
+{
+public:
+    double pos[3];
+    double falloff;
+};
+
+class spotLight
+{
+public:
+    double pos[3];
+    double dir[3];
+    double falloff;
+    double cutoff;
+};
+
+normalLight normalLights[100];
+spotLight spotLights[100];
+int numNormalLight;
+int numSpotLight;
+int normalLightIdx = 0;
+int spotLightIdx = 0;
+
 double nearPlane, farPlane, fovY, aspectRatio, fovX, recLevels, numPixels, checkerCellWidth, I_checker_a, I_checker_d, I_checker_r, numObjects;
 
 double pX_x = 1, pX_y = 0, pX_z = 0,
@@ -368,10 +391,10 @@ void initGL()
 // double lookat_x = 0, lookat_y = 0, lookat_z = 0;
 // // double up_x = -20 / sqrt(400 + 400 + 10000), up_y = 100 / sqrt(sqrt(400 + 400 + 10000)), up_z = -20 / sqrt(400 + 400 + 10000);
 // double temp_right_x = 1, temp_right_y = 1, temp_right_z = 0;
-double eyeat_x = 50, eyeat_y = 50, eyeat_z = 20;
-double lookat_x = 0, lookat_y = 0, lookat_z = 20;
+double eyeat_x = 0, eyeat_y = 100, eyeat_z = 50;
+double lookat_x = 0, lookat_y = 0, lookat_z = 50;
 // double up_x = -20 / sqrt(400 + 400 + 10000), up_y = 100 / sqrt(sqrt(400 + 400 + 10000)), up_z = -20 / sqrt(400 + 400 + 10000);
-double temp_right_x = -1, temp_right_y = 1, temp_right_z = 0;
+double temp_right_x = -1, temp_right_y = 0, temp_right_z = 0;
 double tempdir_x = lookat_x - eyeat_x, tempdir_y = lookat_y - eyeat_y, tempdir_z = lookat_z - eyeat_z;
 // double tempup_x = -eyeat_y , tempup_y = eyeat_z + eyeat_x , tempup_z = -eyeat_y;
 double tempup_x = temp_right_y * tempdir_z - temp_right_z * tempdir_y, tempup_y = temp_right_z * tempdir_x - temp_right_x * tempdir_z, tempup_z = temp_right_x * tempdir_y - temp_right_y * tempdir_x;
@@ -908,6 +931,88 @@ void drawPyramids()
     }
 }
 
+void drawNormalLights()
+{
+    for (int i = 0; i < numNormalLight; i++)
+    {
+        // glPushMatrix();
+        // glTranslatef(normalLights[i].pos[0], normalLights[i].pos[1], normalLights[i].pos[2]);
+        // glColor3f(1, 1, 1);
+        sphere temp = sphere();
+        temp.center_x = normalLights[i].pos[0];
+        temp.center_y = normalLights[i].pos[1];
+        temp.center_z = normalLights[i].pos[2];
+        temp.radius = 10;
+        temp.r = .2;
+        temp.g = .2;
+        temp.b = .2;
+        drawSphere(temp);
+        // glutSolidSphere(30, 10, 10);
+        // glPopMatrix();
+    }
+}
+
+void drawCone(double x, double y, double z,    // apex coordinates
+              double dx, double dy, double dz, // direction from apex to base
+              double height,                   // height from apex to base
+              double angle,                    // top angle of the cone
+              int segments)                    // number of segments
+{
+    glPushMatrix();
+    // Move the coordinate system to the apex point
+    glTranslatef(x, y, z);
+    angle *= M_PI / 180.0;
+    // Rotate to align with the direction vector
+    double length = sqrt(dx * dx + dy * dy + dz * dz);
+    double ax = 57.2957795 * acos(dz / length); // angle in degrees
+    if (dz <= 0.0)
+        ax = -ax;
+    double rx = -dy * dz;
+    double ry = dx * dz;
+    glRotatef(ax, rx, ry, 0.0);
+
+    // Draw the base using a triangle fan
+    // glBegin(GL_TRIANGLE_FAN);
+    // glVertex3f(0, 0, 0);
+    // for (int i = 0; i <= segments; i++) {
+    //     double theta = i * 2.0f * 3.1415926f / segments;
+    //     double x = height * tan(angle) * cos(theta);
+    //     double y = height * tan(angle) * sin(theta);
+    //     glVertex3f(x, y, -height);
+    // }
+    // glEnd();
+
+    // Draw the lateral surface using triangles
+    glBegin(GL_TRIANGLES);
+    for (int i = 0; i <= segments; i++)
+    {
+        double theta1 = i * 2.0f * 3.1415926f / segments;
+        double theta2 = (i + 1) * 2.0f * 3.1415926f / segments;
+
+        double x1 = height * tan(angle) * cos(theta1);
+        double y1 = height * tan(angle) * sin(theta1);
+        double x2 = height * tan(angle) * cos(theta2);
+        double y2 = height * tan(angle) * sin(theta2);
+
+        glVertex3f(0, 0, 0);
+        glVertex3f(x1, y1, -height);
+        glVertex3f(x2, y2, -height);
+    }
+    glEnd();
+
+    glPopMatrix();
+}
+
+void drawSpotLights()
+{
+    for (int i = 0; i < numSpotLight; i++)
+    {
+        drawCone(spotLights[i].pos[0], spotLights[i].pos[1], spotLights[i].pos[2],
+                 spotLights[i].dir[0], spotLights[i].dir[1], spotLights[i].dir[2],
+                 30, spotLights[i].cutoff, 60);
+    }
+}
+
 void display()
 {
     // glClear(GL_COLOR_BUFFER_BIT);            // Clear the color buffer (background)
@@ -933,6 +1038,9 @@ void display()
     drawSpheres();
     drawCubes();
     drawPyramids();
+
+    drawNormalLights();
+    drawSpotLights();
     // glRotatef(objAngle, 0,1,0);
     // drawOctahedron();
     // glColor3f(1,1,0);
@@ -1456,29 +1564,6 @@ void specialKeyListener(int key, int x, int y)
     }
     glutPostRedisplay(); // Post a paint request to activate display()
 }
-
-class normalLight
-{
-public:
-    double pos[3];
-    double falloff;
-};
-
-class spotLight
-{
-public:
-    double pos[3];
-    double dir[3];
-    double falloff;
-    double cutoff;
-};
-
-normalLight normalLights[100];
-spotLight spotLights[100];
-int numNormalLight;
-int numSpotLight;
-int normalLightIdx = 0;
-int spotLightIdx = 0;
 
 void takeinputs()
 {

@@ -5,4 +5,5 @@
 (^^DONE)
 
 1. dynamic mem alloc global arrays
-2. Dynamically generate board
+2. Dynamically generate board (DONE)
+3. Show light sources
