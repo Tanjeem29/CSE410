@@ -17,6 +17,8 @@ using namespace std;
 #define phi (70.53 * M_PI / 180)
 #define PI 3.1415926535
 void capture();
+int greyscale = 0;
+int specialColor = 0;
 double windowWidth = 640, windowHeight = 640;
 double threshhold = 0.0000001;
 class sphere
@@ -90,9 +92,7 @@ public:
     }
 };
 
-// vector<sphere> allspheres = vector<sphere>();
-// sphere spheres[100];
-sphere* spheres;
+sphere *spheres;
 int numSpheres = 0;
 
 class cube
@@ -186,8 +186,7 @@ public:
     }
 };
 
-// cube cubes[100];
-cube* cubes;
+cube *cubes;
 int numCubes = 0;
 
 class pyramid
@@ -273,7 +272,7 @@ public:
 };
 
 // pyramid pyramids[100];
-pyramid* pyramids;
+pyramid *pyramids;
 int numPyramids = 0;
 
 class normalLight
@@ -292,18 +291,15 @@ public:
     double cutoff;
 };
 
-// normalLight normalLights[100];
-// spotLight spotLights[100];
-
-normalLight* normalLights;
-spotLight* spotLights;
+normalLight *normalLights;
+spotLight *spotLights;
 int numNormalLight;
 int numSpotLight;
 int normalLightIdx = 0;
 int spotLightIdx = 0;
 
-double nearPlane, farPlane, fovY, aspectRatio, fovX, recLevels, numPixels, checkerCellWidth, I_checker_a, I_checker_d, I_checker_r;
-int numObjects;
+double nearPlane, farPlane, fovY, aspectRatio, fovX,  checkerCellWidth, I_checker_a, I_checker_d, I_checker_r;
+int numObjects, recLevels, numPixels;
 
 double pX_x = 1, pX_y = 0, pX_z = 0,
        pY_x = 0, pY_y = 1, pY_z = 0,
@@ -314,21 +310,7 @@ const int subdivisions = 5;
 const int numRows = (int)pow(2, subdivisions) + 1;
 
 double sphereVertices[3][40][40];
-// int objAngle = 0;
-// int num_moves = 16;
-// double inc_1 = (1.0/3 - 1)/num_moves;
-// double inc_2 = (1.0/3 - 0)/num_moves;
-// double cylinderLength = sqrt((pX_x-pY_x)*(pX_x-pY_x) + (pX_y-pY_y)*(pX_y-pY_y) + (pX_z-pY_z)*(pX_z-pY_z));
-// double cylinderRadius = pX_z / sin(phi/2);
 
-// double sphereCenter = pX_x - pX_z;
-// double sphereRadius = sqrt(3) * pX_z;
-
-// double camMoveSmooth = 0.25;
-// double noRefChange = 0.25;
-
-// double camMoveSmooth = 0.25;
-// double camRotateRate = 0.01;
 double camMoveSmooth = 3.5;
 double camRotateRate = 0.035;
 
@@ -373,42 +355,14 @@ void initGL()
 }
 
 // Global variables
-// GLfloat eyex = 4, eyey = 4, eyez = 4;
-// GLfloat centerx = 0, centery = 0, centerz = 0;
-// GLfloat upx = 0, upy = 1, upz = 0;
-// bool isAxes = true;
 
-// double lookdir_x=-1/sqrt(3), lookdir_y =-1/sqrt(3), lookdir_z= -1/sqrt(3);
-// double lookright_x = 0.707, lookright_y = 0, lookright_z = -0.707;
-// double lookup_x = -1/sqrt(6), lookup_y = 2/sqrt(6), lookup_z = -1/sqrt(6);
-// double camRotateRate = 0.01;
-
-// MyMatrix eyeat = MyMatrix(3,1,50);
-// MyMatrix lookat = MyMatrix(3,1,0);
-// MyMatrix up = MyMatrix(3,1,0);
-// MyMatrix rightVec = MyMatrix(3,1,0);
-// rightVec.setElement(0,0,1/sqrt(2));
-// rightVec.setElement(1,0,0);
-// rightVec.setElement(2,0,-1/sqrt(2));
-
-// double eyeat_x = 50, eyeat_y = 1, eyeat_z = 50;
-// double lookat_x = 0, lookat_y = 0, lookat_z = 0;
-// double up_x = -1 / sqrt(6), up_y = 2 / sqrt(6), up_z = -1 / sqrt(6);
-
-// double eyeat_x = 100, eyeat_y = -100, eyeat_z = 100;
-// double lookat_x = 0, lookat_y = 0, lookat_z = 0;
-// // double up_x = -20 / sqrt(400 + 400 + 10000), up_y = 100 / sqrt(sqrt(400 + 400 + 10000)), up_z = -20 / sqrt(400 + 400 + 10000);
-// double temp_right_x = 1, temp_right_y = 1, temp_right_z = 0;
 double eyeat_x = 0, eyeat_y = 100, eyeat_z = 50;
 double lookat_x = 0, lookat_y = 0, lookat_z = 50;
-// double up_x = -20 / sqrt(400 + 400 + 10000), up_y = 100 / sqrt(sqrt(400 + 400 + 10000)), up_z = -20 / sqrt(400 + 400 + 10000);
 double temp_right_x = -1, temp_right_y = 0, temp_right_z = 0;
 double tempdir_x = lookat_x - eyeat_x, tempdir_y = lookat_y - eyeat_y, tempdir_z = lookat_z - eyeat_z;
-// double tempup_x = -eyeat_y , tempup_y = eyeat_z + eyeat_x , tempup_z = -eyeat_y;
 double tempup_x = temp_right_y * tempdir_z - temp_right_z * tempdir_y, tempup_y = temp_right_z * tempdir_x - temp_right_x * tempdir_z, tempup_z = temp_right_x * tempdir_y - temp_right_y * tempdir_x;
 double up_length = sqrt(tempup_x * tempup_x + tempup_y * tempup_y + tempup_z * tempup_z);
 double up_x = tempup_x / up_length, up_y = tempup_y / up_length, up_z = tempup_z / up_length;
-// double up_x = tempup_x / sqrt(tempup_x * tempup_x + tempup_y * tempup_y + tempup_z * tempup_z), up_y = tempup_y / sqrt(tempup_x * tempup_x + tempup_y * tempup_y + tempup_z * tempup_z), up_z = tempup_z / sqrt(tempup_x * tempup_x + tempup_y * tempup_y + tempup_z * tempup_z);
 
 /* Draw axes: X in Red, Y in Green and Z in Blue */
 void drawAxes()
@@ -418,194 +372,19 @@ void drawAxes()
     glColor3f(1, 0, 0); // Red
     // X axis
     glVertex3f(0, 0, 0);
-    glVertex3f(100, 0, 0);
+    glVertex3f(1000, 0, 0);
 
     glColor3f(0, 1, 0); // Green
     // Y axis
     glVertex3f(0, 0, 0);
-    glVertex3f(0, 100, 0);
+    glVertex3f(0, 1000, 0);
 
     glColor3f(0, 0, 1); // Blue
     // Z axis
     glVertex3f(0, 0, 0);
-    glVertex3f(0, 0, 100);
+    glVertex3f(0, 0, 1000);
     glEnd();
 }
-
-void drawOctahedronFace()
-{
-    glBegin(GL_TRIANGLES); // Begin drawing the pyramid with 4 triangles
-    // Front
-    glVertex3f(pX_x, pX_y, pX_z);
-    glVertex3f(pY_x, pY_y, pY_z);
-    glVertex3f(pZ_x, pZ_y, pZ_z);
-    glEnd(); // Done drawing the pyramid
-}
-
-void drawOctahedron()
-{
-    glColor3f(0, 1, 1);
-    drawOctahedronFace();
-    glPushMatrix();
-    glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
-    drawOctahedronFace();
-    glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
-    drawOctahedronFace();
-    glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
-    drawOctahedronFace();
-    glPopMatrix();
-
-    // glColor3f(1, 0, 1);
-
-    // glPushMatrix();
-    // glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-    // drawOctahedronFace();
-    // glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
-    // drawOctahedronFace();
-    // glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
-    // drawOctahedronFace();
-    // glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
-    // drawOctahedronFace();
-    // glPopMatrix();
-
-    // printf("%lf %lf", inc_1, inc_2);
-}
-
-// void O2S(){
-//     // printf("OOOO");
-//     if(pX_x + inc_1 - 1.0 /3 <= 0){
-//         // printf("%lf\n", pX_x);
-//         pX_x = pX_y = pX_z = pY_x = pY_y = pY_z = pZ_x = pZ_y = pZ_z = 1.0/3;
-
-//     }
-//     else{
-//         // printf("%lf\n", pX_x);
-//         pX_x +=inc_1;
-//         pY_y +=inc_1;
-//         pZ_z +=inc_1;
-
-//         pX_y+=inc_2;
-//         pX_z+=inc_2;
-//         pY_x+=inc_2;
-//         pY_z+=inc_2;
-//         pZ_x+=inc_2;
-//         pZ_y+=inc_2;
-//     }
-//     cylinderLength = sqrt((pX_x-pY_x)*(pX_x-pY_x) + (pX_y-pY_y)*(pX_y-pY_y) + (pX_z-pY_z)*(pX_z-pY_z));
-//     cylinderRadius = pX_z / sin(phi/2);
-//     sphereCenter = pX_x - pX_z;
-//     sphereRadius = sqrt(3) * pX_z;
-//     // sphereCenter += sphereCenter_inc;
-//     // sphereRadius += sphereRadius_inc;
-// }
-
-// void S2O(){
-//     if(pX_x - inc_1 - 1.0  > 0){
-//         // printf("Ohnoh2\n");
-//         // printf("%lf\n", pX_x);
-//         pX_y = pX_z = pY_x  = pY_z = pZ_x = pZ_y =  0;
-//         pX_x = pY_y = pZ_z = 1;
-//     }
-//     else{
-//         // printf("%lf\n", pX_x);
-//         pX_x -=inc_1;
-//         pY_y -=inc_1;
-//         pZ_z -=inc_1;
-
-//         pX_y-=inc_2;
-//         pX_z-=inc_2;
-//         pY_x-=inc_2;
-//         pY_z-=inc_2;
-//         pZ_x-=inc_2;
-//         pZ_y-=inc_2;
-//     }
-//     cylinderLength = sqrt((pX_x-pY_x)*(pX_x-pY_x) + (pX_y-pY_y)*(pX_y-pY_y) + (pX_z-pY_z)*(pX_z-pY_z));
-//     cylinderRadius = pX_z / sin(phi/2);
-//     // sphereCenter -= sphereCenter_inc;
-//     // sphereRadius -= sphereRadius_inc;
-//     sphereCenter = pX_x - pX_z;
-//     sphereRadius = sqrt(3) * pX_z;
-// }
-
-void drawCylinder(double height, double radius, int segments)
-{
-    double tempx = radius, tempy = 0;
-    double currx, curry;
-    glBegin(GL_QUADS);
-    for (int i = 1; i <= segments; i++)
-    {
-        double theta = i * 2.0 * M_PI / segments;
-        currx = radius * cos(theta);
-        curry = radius * sin(theta);
-
-        GLfloat c = (2 + cos(theta)) / 3;
-        // glColor3f(c,c,c);
-        glVertex3f(currx, curry, height / 2);
-        glVertex3f(currx, curry, -height / 2);
-
-        glVertex3f(tempx, tempy, -height / 2);
-        glVertex3f(tempx, tempy, height / 2);
-
-        tempx = currx;
-        tempy = curry;
-    }
-    glEnd();
-}
-
-// void drawCylinderEdge(){
-//     double YZmp_x = (pY_x + pZ_x)/2;
-//     double YZmp_y = (pY_y + pZ_y)/2;
-//     double YZmp_z = (pY_z + pZ_z)/2;
-//     double temp_x = YZmp_x;
-//     double temp_y = YZmp_y * cos(M_PI/4) - YZmp_z * sin(M_PI/4);
-//     double temp_z = YZmp_y * cos(M_PI/4) + YZmp_z * sin(M_PI/4);
-//     double tr_x = 0;
-//     double tr_y = 0;
-//     double tr_z = temp_z - cylinderRadius * cos(phi/2);
-
-//     glPushMatrix();
-//         glRotatef(-45.0f, 1.0f, 0.0f, 0.0f);
-//         glTranslatef(tr_x,tr_y, tr_z);
-//         // glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
-//         glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-
-//         drawCylinder(cylinderLength, cylinderRadius, 90);
-//         // glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
-//     glPopMatrix();
-
-// }
-
-// void drawAllEdges(){
-//     glPushMatrix();
-//         drawCylinderEdge();
-//         glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-//         drawCylinderEdge();
-//         glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-//         drawCylinderEdge();
-//         glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-//         drawCylinderEdge();
-//     glPopMatrix();
-//     glPushMatrix();
-//         glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
-//         drawCylinderEdge();
-//         glRotatef(90.0f, 1.0f, 0.0f, 0.0f); //axes also shifted, -x -> y, y -> x
-//         drawCylinderEdge();
-//         glRotatef(90.0f, 1.0f, 0.0f, 0.0f); //axes also shifted, -x -> y, y -> x
-//         drawCylinderEdge();
-//         glRotatef(90.0f, 1.0f, 0.0f, 0.0f); //axes also shifted, -x -> y, y -> x
-//         drawCylinderEdge();
-//     glPopMatrix();
-//     glPushMatrix();
-//         glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
-//         drawCylinderEdge();
-//         glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-//         drawCylinderEdge();
-//         glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-//         drawCylinderEdge();
-//         glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-//         drawCylinderEdge();
-//     glPopMatrix();
-// }
 
 void calcVertices()
 {
@@ -683,79 +462,15 @@ void drawSphere(sphere s)
     glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
     drawSpherePart(s.center_x, s.center_y, s.center_z, s.radius);
     glPopMatrix();
-    // drawSpherePart();
-    // glPushMatrix();
-    //     glRotatef(180,0,1.0,0);
-    //     drawSpherePart();
-    // glPopMatrix();
-
-    // glColor3f(0,1,0);
-    // glPushMatrix();
-    //     glRotatef(90,0,1.0,0);
-    //     drawSpherePart();
-    //     glRotatef(180,0,1.0,0);
-    //     drawSpherePart();
-    // glPopMatrix();
-
-    // glColor3f(0,0,1);
-    // glPushMatrix();
-    //     glRotatef(90,0,0,1.0);
-    //     drawSpherePart();
-    //     glRotatef(180,0,0,1.0);
-    //     drawSpherePart();
-    // glPopMatrix();
 }
 
 /*  Handler for window-repaint event. Call back when the window first appears and
     whenever the window needs to be re-painted. */
-// void display() {
-//     // glClear(GL_COLOR_BUFFER_BIT);            // Clear the color buffer (background)
-//     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//     glMatrixMode(GL_MODELVIEW);             // To operate on Model-View matrix
-//     glLoadIdentity();                       // Reset the model-view matrix
-
-//     // default arguments of gluLookAt
-//     // gluLookAt(0,0,0, 0,0,-100, 0,1,0);
-
-//     // gluLookAt(eyeat_x,eyeat_y,eyeat_z,
-//     //           eyeat_x + lookdir_x,eyeat_y + lookdir_y,eyeat_z + lookdir_z,
-//     //           lookup_x,lookup_y,lookup_z);
-
-//     gluLookAt(eyeat_x,eyeat_y,eyeat_z,
-//               lookat_x,lookat_y,lookat_z,
-//               up_x,up_y,up_z);
-//     // draw
-//     // if (isAxes) drawAxes();
-
-//     glRotatef(objAngle, 0,1,0);
-//     drawOctahedron();
-//     glColor3f(1,1,0);
-//     drawAllEdges();
-//     glColor3f(1,0,0);
-//     drawCorners();
-//     // drawSpherePart();
-//     glutSwapBuffers();  // Render now
-// }
 
 void drawcheckerboard2()
 {
     drawAxes();
-    // glLineWidth(3);
-    // glColor3f(1, 0, 0);
-    // // cout<<checkerCellWidth<<endl;
-    // int lim = 50;
-    // printf("%lf\n", checkerCellWidth);
-    // for (int i = -lim; i < lim; i++)
-    // {
-    //     glBegin(GL_LINES);
-    //     glVertex3f(-lim * checkerCellWidth, 0, i * checkerCellWidth);
-    //     glVertex3f(lim * checkerCellWidth, 0, i * checkerCellWidth);
-    //     glEnd();
-    //     glBegin(GL_LINES);
-    //     glVertex3f(i * checkerCellWidth, 0, -lim * checkerCellWidth);
-    //     glVertex3f(i * checkerCellWidth, 0, lim * checkerCellWidth);
-    //     glEnd();
-    // }
+
     glColor3f(1, 1, 1);
     // cout<<checkerCellWidth<<endl;
     int lim = 200;
@@ -778,32 +493,11 @@ void drawcheckerboard2()
             glColor3f(color, color, color);
         }
     }
-    // glBegin(GL_QUADS);
-    // glVertex3f(checkerCellWidth, 0, checkerCellWidth);
-    // glVertex3f(-checkerCellWidth, 0, checkerCellWidth);
-    // glVertex3f(-checkerCellWidth, 0, -checkerCellWidth);
-    // glVertex3f(checkerCellWidth, 0, -checkerCellWidth);
-    // glEnd();
 }
 void drawcheckerboard()
 {
     drawAxes();
-    // glLineWidth(3);
-    // glColor3f(1, 0, 0);
-    // // cout<<checkerCellWidth<<endl;
-    // int lim = 50;
-    // printf("%lf\n", checkerCellWidth);
-    // for (int i = -lim; i < lim; i++)
-    // {
-    //     glBegin(GL_LINES);
-    //     glVertex3f(-lim * checkerCellWidth, 0, i * checkerCellWidth);
-    //     glVertex3f(lim * checkerCellWidth, 0, i * checkerCellWidth);
-    //     glEnd();
-    //     glBegin(GL_LINES);
-    //     glVertex3f(i * checkerCellWidth, 0, -lim * checkerCellWidth);
-    //     glVertex3f(i * checkerCellWidth, 0, lim * checkerCellWidth);
-    //     glEnd();
-    // }
+
     glColor3f(1, 1, 1);
     // cout<<checkerCellWidth<<endl;
     int lim = 200;
@@ -838,12 +532,6 @@ void drawcheckerboard()
             glColor3f(color, color, color);
         }
     }
-    // glBegin(GL_QUADS);
-    // glVertex3f(checkerCellWidth, 0, checkerCellWidth);
-    // glVertex3f(-checkerCellWidth, 0, checkerCellWidth);
-    // glVertex3f(-checkerCellWidth, 0, -checkerCellWidth);
-    // glVertex3f(checkerCellWidth, 0, -checkerCellWidth);
-    // glEnd();
 }
 
 void drawSpheres()
@@ -943,9 +631,7 @@ void drawNormalLights()
 {
     for (int i = 0; i < numNormalLight; i++)
     {
-        // glPushMatrix();
-        // glTranslatef(normalLights[i].pos[0], normalLights[i].pos[1], normalLights[i].pos[2]);
-        // glColor3f(1, 1, 1);
+
         sphere temp = sphere();
         temp.center_x = normalLights[i].pos[0];
         temp.center_y = normalLights[i].pos[1];
@@ -955,8 +641,6 @@ void drawNormalLights()
         temp.g = .2;
         temp.b = .2;
         drawSphere(temp);
-        // glutSolidSphere(30, 10, 10);
-        // glPopMatrix();
     }
 }
 
@@ -1028,18 +712,9 @@ void display()
     glMatrixMode(GL_MODELVIEW); // To operate on Model-View matrix
     glLoadIdentity();           // Reset the model-view matrix
 
-    // default arguments of gluLookAt
-    // gluLookAt(0,0,0, 0,0,-100, 0,1,0);
-
-    // gluLookAt(eyeat_x,eyeat_y,eyeat_z,
-    //           eyeat_x + lookdir_x,eyeat_y + lookdir_y,eyeat_z + lookdir_z,
-    //           lookup_x,lookup_y,lookup_z);
-
     gluLookAt(eyeat_x, eyeat_y, eyeat_z,
               lookat_x, lookat_y, lookat_z,
               up_x, up_y, up_z);
-    // draw
-    // if (isAxes) drawAxes();
 
     drawcheckerboard();
     // printf("numSpheres: %d\n", numSpheres);
@@ -1049,13 +724,6 @@ void display()
 
     drawNormalLights();
     drawSpotLights();
-    // glRotatef(objAngle, 0,1,0);
-    // drawOctahedron();
-    // glColor3f(1,1,0);
-    // drawAllEdges();
-    // glColor3f(1,0,0);
-    // drawCorners();
-    // drawSpherePart();
 
     glutSwapBuffers(); // Render now
 }
@@ -1076,8 +744,6 @@ void reshapeListener(GLsizei width, GLsizei height)
     glMatrixMode(GL_PROJECTION); // To operate on the Projection matrix
     glLoadIdentity();            // Reset the projection matrix
 
-    // gluPerspective(45.0f, aspect, 0.1f, 100.0f);
-    // fovY = 45;
     gluPerspective(fovY, aspectRatio, nearPlane, farPlane);
 }
 
@@ -1310,19 +976,58 @@ void keyboardListener(unsigned char key, int x, int y)
         break;
 
     case 'a':
-        // objAngle-=10;   // show/hide Axes if 'a' is pressed
-        // objAngle%=360;
+        if (greyscale == 0 && specialColor == 0)
+        {
+            printf("-----------Greyscale Mode-----------\n");
+            greyscale = 1;
+        }
+        else if (greyscale == 1 && specialColor == 0)
+        {
+            printf("-----------Normal Mode-----------\n");
+            greyscale = 0;
+        }
+        else
+        {
+            printf("Turn Off 'Special Colors' First\n");
+        }
         break;
     case 'd':
-        // objAngle+=10;   // show/hide Cube if 'c' is pressed
-        // objAngle%=360;
-        break;
-    case ',':
-        // O2S();
+        if (greyscale == 0 && specialColor == 0)
+        {
+            printf("-----------Special Colors Mode-----------\n");
+            specialColor = 1;
+        }
+        else if (greyscale == 0 && specialColor == 1)
+        {
+            printf("-----------Normal Mode-----------\n");
+            specialColor = 0;
+        }
+        else
+        {
+            printf("Turn Off 'Greyscale' First\n");
+        }
         break;
     case '.':
-        // S2O();
+        recLevels++;
+        printf("Recursive level increased to %d\n", recLevels);
         break;
+    case ',':
+        if (recLevels > 1)
+        {
+            recLevels--;
+            printf("Recursive level decreased to %d\n", recLevels);
+        }
+        else
+        {
+            printf("Minimum recursion level reached\n");
+        }
+        break;
+        // case ',':
+        //     // O2S();
+        //     break;
+        // case '.':
+        //     // S2O();
+        //     break;
         // case 's':
         //     dir_x = lookat_x - eyeat_x;
         //     dir_y = lookat_y - eyeat_y;
@@ -1598,7 +1303,6 @@ void takeinputs()
     spheres = new sphere[numObjects];
     cubes = new cube[numObjects];
     pyramids = new pyramid[numObjects];
-
 
     for (int i = 0; i < numObjects; i++)
     {
@@ -2686,7 +2390,7 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
 
 void capture()
 {
-    printf("Starting Image Capture ............\n");
+    printf("----------------- Starting Image Capture with recursive level: %d---------\n", recLevels);
     initPointBuffer();
     dir_x = lookat_x - eyeat_x;
     dir_y = lookat_y - eyeat_y;
@@ -2730,6 +2434,48 @@ void capture()
         for (int j = 0; j < numPixels; j++)
         { // along height, so rows so x
 
+            if (i * numPixels + j == (numPixels * numPixels) / 10)
+            {
+                printf("10 Percent Done ..................\n");
+            }
+            else if (i * numPixels + j == 2 * (numPixels * numPixels) / 10)
+            {
+                printf("20 Percent Done ..................\n");
+            }
+            else if (i * numPixels + j == 3 * (numPixels * numPixels) / 10)
+            {
+                printf("30 Percent Done ..................\n");
+            }
+            else if (i * numPixels + j == 4 * (numPixels * numPixels) / 10)
+            {
+                printf("40 Percent Done ..................\n");
+            }
+            else if (i * numPixels + j == 5 * (numPixels * numPixels) / 10)
+            {
+                printf("50 Percent Done ..................\n");
+            }
+            else if (i * numPixels + j == 6 * (numPixels * numPixels) / 10)
+            {
+                printf("60 Percent Done ..................\n");
+            }
+            else if (i * numPixels + j == 7 * (numPixels * numPixels) / 10)
+            {
+                printf("70 Percent Done ..................\n");
+            }
+            else if (i * numPixels + j == 8 * (numPixels * numPixels) / 10)
+            {
+                printf("80 Percent Done ..................\n");
+            }
+            else if (i * numPixels + j == 9 * (numPixels * numPixels) / 10)
+            {
+                printf("90 Percent Done ..................\n");
+            }
+            else if (i * numPixels + j == (numPixels * numPixels) - 1)
+            {
+                printf("100 Percent Done ..................\n");
+                printf("Generating bmp......\n");
+            }
+
             double color_r = 0, color_g = 0, color_b = 0;
 
             double currPixel[3];
@@ -2752,11 +2498,27 @@ void capture()
 
             if (closestIntersection.t < farPlane)
             {
-
-                pointBuffer[i][j][0] = closestIntersection.color[0];
-                pointBuffer[i][j][1] = closestIntersection.color[1];
-                pointBuffer[i][j][2] = closestIntersection.color[2];
-                pointBuffer[i][j][3] = closestIntersection.t;
+                if (specialColor == 1)
+                {
+                    pointBuffer[i][j][0] = (closestIntersection.normal[0] + 1) / 2;
+                    pointBuffer[i][j][1] = (closestIntersection.normal[1] + 1) / 2;
+                    pointBuffer[i][j][2] = (closestIntersection.normal[2] + 1) / 2;
+                    pointBuffer[i][j][3] = closestIntersection.t;
+                }
+                else if (greyscale == 1)
+                {
+                    pointBuffer[i][j][0] = (closestIntersection.color[0] + closestIntersection.color[1] + closestIntersection.color[2]) / 3;
+                    pointBuffer[i][j][1] = (closestIntersection.color[0] + closestIntersection.color[1] + closestIntersection.color[2]) / 3;
+                    pointBuffer[i][j][2] = (closestIntersection.color[0] + closestIntersection.color[1] + closestIntersection.color[2]) / 3;
+                    pointBuffer[i][j][3] = closestIntersection.t;
+                }
+                else
+                {
+                    pointBuffer[i][j][0] = closestIntersection.color[0];
+                    pointBuffer[i][j][1] = closestIntersection.color[1];
+                    pointBuffer[i][j][2] = closestIntersection.color[2];
+                    pointBuffer[i][j][3] = closestIntersection.t;
+                }
             }
             // else
             // {
