@@ -90,7 +90,9 @@ public:
     }
 };
 
-sphere spheres[100];
+// vector<sphere> allspheres = vector<sphere>();
+// sphere spheres[100];
+sphere* spheres;
 int numSpheres = 0;
 
 class cube
@@ -184,7 +186,8 @@ public:
     }
 };
 
-cube cubes[100];
+// cube cubes[100];
+cube* cubes;
 int numCubes = 0;
 
 class pyramid
@@ -269,7 +272,8 @@ public:
     }
 };
 
-pyramid pyramids[100];
+// pyramid pyramids[100];
+pyramid* pyramids;
 int numPyramids = 0;
 
 class normalLight
@@ -288,14 +292,18 @@ public:
     double cutoff;
 };
 
-normalLight normalLights[100];
-spotLight spotLights[100];
+// normalLight normalLights[100];
+// spotLight spotLights[100];
+
+normalLight* normalLights;
+spotLight* spotLights;
 int numNormalLight;
 int numSpotLight;
 int normalLightIdx = 0;
 int spotLightIdx = 0;
 
-double nearPlane, farPlane, fovY, aspectRatio, fovX, recLevels, numPixels, checkerCellWidth, I_checker_a, I_checker_d, I_checker_r, numObjects;
+double nearPlane, farPlane, fovY, aspectRatio, fovX, recLevels, numPixels, checkerCellWidth, I_checker_a, I_checker_d, I_checker_r;
+int numObjects;
 
 double pX_x = 1, pX_y = 0, pX_z = 0,
        pY_x = 0, pY_y = 1, pY_z = 0,
@@ -1587,6 +1595,11 @@ void takeinputs()
     string type;
     // spheres.clear();
 
+    spheres = new sphere[numObjects];
+    cubes = new cube[numObjects];
+    pyramids = new pyramid[numObjects];
+
+
     for (int i = 0; i < numObjects; i++)
     {
         file >> type;
@@ -1628,6 +1641,7 @@ void takeinputs()
 
             // spheres.push_back(s);
             spheres[numSpheres++] = s;
+            // allspheres.push_back(s);
         }
         else if (type == "cube")
         {
@@ -1711,12 +1725,14 @@ void takeinputs()
     }
 
     file >> numNormalLight;
+    normalLights = new normalLight[numNormalLight];
     for (int i = 0; i < numNormalLight; i++)
     {
         double x, y, z, f;
         file >> normalLights[i].pos[0] >> normalLights[i].pos[1] >> normalLights[i].pos[2] >> normalLights[i].falloff;
     }
     file >> numSpotLight;
+    spotLights = new spotLight[numSpotLight];
     for (int i = 0; i < numSpotLight; i++)
     {
         file >> spotLights[i].pos[0] >> spotLights[i].pos[1] >> spotLights[i].pos[2] >> spotLights[i].falloff;
@@ -2812,5 +2828,11 @@ int main(int argc, char **argv)
     glutSpecialFunc(specialKeyListener); // Register callback handler for special-key event
     initGL();                            // Our own OpenGL initialization
     glutMainLoop();                      // Enter the event-processing loop
+
+    delete spheres;
+    delete cubes;
+    delete pyramids;
+    delete normalLights;
+    delete spotLights;
     return 0;
 }
