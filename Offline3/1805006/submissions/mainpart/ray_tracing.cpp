@@ -21,12 +21,6 @@ int greyscale = 0;
 int specialColor = 0;
 double windowWidth = 640, windowHeight = 640;
 double threshhold = 0.0000001;
-bitmap_image tex_white("texture_w.bmp");
-bitmap_image tex_black("texture_b.bmp");
-
-unsigned char ***tex_black_map;
-unsigned char ***tex_white_map;
-int texture = 0;
 class sphere
 {
 public:
@@ -351,73 +345,6 @@ class ray
         dir[2] = 0;
     }
 };
-
-void loadbmps()
-{
-    // tex_black_map = new unsigned char **[tex_black.width()];
-    // for (int i = 0; i < tex_black.width(); i++)
-    // {
-    //     tex_black_map[i] = new unsigned char *[tex_black.height()];
-    //     for (int j = 0; j < tex_black.height(); j++)
-    //     {
-    //         tex_black_map[i][j] = new unsigned char[3];
-    //         tex_black.get_pixel(i, j, tex_black_map[i][j][0], tex_black_map[i][j][1], tex_black_map[i][j][2]);
-    //     }
-    // }
-
-    tex_black_map = new unsigned char **[tex_black.height()];
-    for (unsigned int y = 0; y < tex_black.height(); y++)
-    {
-        tex_black_map[y] = new unsigned char *[tex_black.width()];
-        for (unsigned int x = 0; x < tex_black.width(); x++)
-        {
-            tex_black_map[y][x] = new unsigned char[3];
-            tex_black.get_pixel(x, y, tex_black_map[y][x][0], tex_black_map[y][x][1], tex_black_map[y][x][2]); // bmp-> first width then height, first col then row
-        }
-    }
-
-    tex_white_map = new unsigned char **[tex_white.height()];
-    for (unsigned int y = 0; y < tex_white.height(); ++y)
-    {
-        tex_white_map[y] = new unsigned char *[tex_white.width()];
-        for (unsigned int x = 0; x < tex_black.width(); ++x)
-        {
-            tex_white_map[y][x] = new unsigned char[3];
-            tex_white.get_pixel(x, y, tex_white_map[y][x][0], tex_white_map[y][x][1], tex_white_map[y][x][2]);
-        }
-    }
-}
-
-void cleanUp()
-{
-    delete[] spheres;
-    delete[] cubes;
-    delete[] pyramids;
-    delete[] normalLights;
-    delete[] spotLights;
-
-    for (unsigned int y = 0; y < tex_black.height(); y++)
-    {
-        for (unsigned int x = 0; x < tex_black.width(); x++)
-        {
-            delete[] tex_black_map[y][x];
-        }
-        delete[] tex_black_map[y];
-    }
-    delete[] tex_black_map;
-
-    for (unsigned int y = 0; y < tex_white.height(); y++)
-    {
-        for (unsigned int x = 0; x < tex_white.width(); x++)
-        {
-            delete[] tex_white_map[y][x];
-        }
-        delete[] tex_white_map[y];
-    }
-
-    tex_black.clear();
-    tex_white.clear();
-}
 
 /* Initialize OpenGL Graphics */
 void initGL()
@@ -1093,18 +1020,6 @@ void keyboardListener(unsigned char key, int x, int y)
         else
         {
             printf("Minimum recursion level reached\n");
-        }
-        break;
-    case ' ':
-        if (texture == 0)
-        {
-            printf("----------Texture Mode On-----------\n");
-            texture = 1;
-        }
-        else
-        {
-            printf("----------Texture Mode Off----------\n");
-            texture = 0;
         }
         break;
         // case ',':
@@ -1939,12 +1854,12 @@ intersection intersectPyramid(double rayBegin[], double rayDir[], pyramid p)
     }
 
     // base
-    temp = intersectTriangle(rayBegin, rayDir, p.points[0], p.points[3], p.points[2]);
+    temp = intersectTriangle(rayBegin, rayDir, p.points[0], p.points[1], p.points[2]);
     if (temp.t > nearPlane && temp.t < ans.t)
     {
         ans = temp;
     }
-    temp = intersectTriangle(rayBegin, rayDir, p.points[0], p.points[2], p.points[1]);
+    temp = intersectTriangle(rayBegin, rayDir, p.points[0], p.points[2], p.points[3]);
     if (temp.t > nearPlane && temp.t < ans.t)
     {
         ans = temp;
@@ -2103,71 +2018,6 @@ intersection obscure(double rayOrg[], double rayDir[])
         closestIntersection = tempIntersection;
     }
     return closestIntersection;
-}
-
-intersection getTextureColor(double at_x, double at_y)
-{
-    intersection ans = intersection();
-    double r, g, b;
-    int x = (int)floor(at_x / checkerCellWidth);
-    int y = (int)floor(at_y / checkerCellWidth);
-
-    if ((x + y) % 2 == 0)
-    {
-        // white cell
-        int base_x = (int)floor(at_x / checkerCellWidth);
-        int base_y = (int)floor(at_y / checkerCellWidth);
-
-        double dx = at_x - base_x * checkerCellWidth;
-        double dy = at_y - base_y * checkerCellWidth;
-
-        int pixel_x = dx * tex_white.width() / checkerCellWidth;
-        int pixel_y = dy * tex_white.height() / checkerCellWidth;
-        unsigned char ur, ug, ub;
-        tex_white.get_pixel(pixel_x, pixel_y, ur, ug, ub);
-        r = (double)ur / 255.0;
-        g = (double)ug / 255.0;
-        b = (double)ub / 255.0;
-
-        // ur = tex_white_map[pixel_y][pixel_x][0];
-        // ug = tex_white_map[pixel_y][pixel_x][1];
-        // ub = tex_white_map[pixel_y][pixel_x][2];
-        // r = (double)ur / 255.0;
-        // g = (double)ug / 255.0;
-        // b = (double)ub / 255.0;
-    }
-    else
-    {
-        // black cell
-        int base_x = (int)floor(at_x / checkerCellWidth);
-        int base_y = (int)floor(at_y / checkerCellWidth);
-
-        double dx = at_x - base_x * checkerCellWidth;
-        double dy = at_y - base_y * checkerCellWidth;
-
-        int pixel_x = dx * tex_black.width() / checkerCellWidth;
-        int pixel_y = dy * tex_black.height() / checkerCellWidth;
-
-        unsigned char ur, ug, ub;
-        tex_black.get_pixel(pixel_x, pixel_y, ur, ug, ub);
-        // printf("at_x: %f, at_y: %f\n", at_x, at_y);
-        // printf("floored at_x: %f, floored at_y: %f\n", floor(at_x), floor(at_y));
-        // printf("base_x: %d, base_y: %d\n", base_x, base_y);
-        // printf("dx: %f, dy: %f, pixel_x: %d, pixel_y: %d\n", dx, dy, pixel_x, pixel_y);
-        // return 0;
-        // exit;
-        // ur = tex_black_map[pixel_y][pixel_x][0];
-        // ug = tex_black_map[pixel_y][pixel_x][1];
-        // ub = tex_black_map[pixel_y][pixel_x][2];
-        r = (double)ur / 255.0;
-        g = (double)ug / 255.0;
-        b = (double)ub / 255.0;
-    }
-    // r = g = b = 1;
-    ans.color[0] = r;
-    ans.color[1] = g;
-    ans.color[2] = b;
-    return ans;
 }
 
 intersection rayTrace(double rayOrg[], double rayDir[], int round)
@@ -2400,19 +2250,6 @@ intersection rayTrace(double rayOrg[], double rayDir[], int round)
     closestIntersection.color[1] = ag + dg + sg + temp.color[1] * closestIntersection.kr;
     closestIntersection.color[2] = ab + db + sb + temp.color[2] * closestIntersection.kr;
 
-    if (closestIntersection.type == 4 && texture == 1)
-    {
-        double texr, texg, texb;
-        intersection temp2 = intersection();
-        temp2 = getTextureColor(closestIntersection.point[0], closestIntersection.point[1]);
-        texr = temp2.color[0];
-        texg = temp2.color[1];
-        texb = temp2.color[2];
-        closestIntersection.color[0] = texr * (ar + dr) + temp.color[0] * closestIntersection.kr;
-        closestIntersection.color[1] = texg * (ag + dg) + temp.color[1] * closestIntersection.kr;
-        closestIntersection.color[2] = texb * (ab + db) + temp.color[2] * closestIntersection.kr;
-    }
-
     // closestIntersection.color[0] = r1;
     // closestIntersection.color[1] = g1;
     // closestIntersection.color[2] = b1;
@@ -2629,7 +2466,6 @@ int main(int argc, char **argv)
     glutCreateWindow("OpenGL 3D Drawing");                    // Create a window with the given title
     // testTriangleIntersection();
     // cout<<"Hello"<<endl;
-    loadbmps();
     calcVertices();
     takeinputs();
     glutDisplayFunc(display); // Register display callback handler for window re-paint
@@ -2640,6 +2476,10 @@ int main(int argc, char **argv)
     initGL();                            // Our own OpenGL initialization
     glutMainLoop();                      // Enter the event-processing loop
 
-    cleanUp();
+    delete spheres;
+    delete cubes;
+    delete pyramids;
+    delete normalLights;
+    delete spotLights;
     return 0;
 }
