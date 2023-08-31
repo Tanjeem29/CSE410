@@ -1,9 +1,0 @@
-(Last) 1. dynamic mem alloc global arrays
-2. Light input
-3. 1 level trace (define func struct for recursive)
-4. recursive trace
-(^^DONE)
-
-1. dynamic mem alloc global arrays
-2. Dynamically generate board (DONE)
-3. Show light sources
